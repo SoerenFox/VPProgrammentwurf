@@ -38,6 +38,9 @@ Reset_Handler:
     ldr r2, =_sloaddata
     movs r3, #0
     b .loopCopyData
+    
+MAGIC_STACK_VALUE:
+	.word 0xDEADBEEF
 
 .copyData:
     ldr r4, [r2, r3]
@@ -58,15 +61,29 @@ Reset_Handler:
 .fillZerobss:
     str  r3, [r2]
     adds r2, r2, #4
-
+    
 .loopFillZerobss:
     cmp r2, r4
     bcc .fillZerobss
 
     /* Initialize the Stack-Pointer */
     /* Load address of initial_stack_pointer into R0 for. Symbol defined in Linker Script */
-    ldr r0, =_initial_stack_pointer
+ 	ldr r0, = _start_of_stack
+    ldr r1, = _end_of_stack
+    ldr r2, = MAGIC_STACK_VALUE
+    ldr r2, [r2]
+    b .loopFillStack
+ 
+.fillStack:
+    str  r2, [r0]
+    adds r0, r0, #4
+
+.loopFillStack:
+	cmp r0, r1
+	bne .fillStack    
     /* Set stack pointer */
+    
+   	ldr r0, =_end_of_stack
     mov   sp, r0
 
     /* Call the clock system intitialization function.*/
@@ -75,4 +92,7 @@ Reset_Handler:
     /* Call the application's entry point.*/
     bl main
     bx lr
+    
+.align 4
+    
 .size Reset_Handler, .-Reset_Handler
