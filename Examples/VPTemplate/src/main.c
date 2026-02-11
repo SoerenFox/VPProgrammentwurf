@@ -56,6 +56,7 @@ static Scheduler gScheduler;            // Global Scheduler instance
 static GasSensor gGasSensor1;
 static GasSensor gGasSensor2;
 
+
 /***** PUBLIC FUNCTIONS ******************************************************/
 
 
@@ -64,20 +65,20 @@ static GasSensor gGasSensor2;
  */
 int main(void)
 {
-    // Initialize the HAL
-    HAL_Init();
+	// Initialize the HAL
+	    HAL_Init();
 
-    // Initialize the System Clock
-    SystemClock_Config();
+	    // Initialize the System Clock
+	    SystemClock_Config();
 
-    // Initialize Peripherals
-    initializePeripherals();
+	    // Initialize Peripherals
+	    initializePeripherals();
 
-    // Initialize Scheduler
-    schedInitialize(&gScheduler);
+	    // Initialize Scheduler
+	    schedInitialize(&gScheduler);
 
-    gasSesonsrInitialize(&gGasSensor1, 204);
-    gasSesonsrInitialize(&gGasSensor2, 204);
+    gasSensorInitialize(&gGasSensor1, 204);
+    gasSensorInitialize(&gGasSensor2, 204);
 
     while (1)
     {
