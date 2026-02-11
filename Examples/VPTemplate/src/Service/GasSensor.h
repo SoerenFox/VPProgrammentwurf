@@ -16,7 +16,7 @@ typedef struct _GasSensor {
 	uint32_t conversionFactor;
 } GasSensor;
 
-int32_t gasSesonsrInitialize(GasSensor* pSensor, uint32_t convFactor);
+int32_t	gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor);
 int32_t gasSensorSetSensorVoltage(GasSensor* pSensor, uint32_t sensorVoltage);
 
 int32_t gasSensorGetSensorValue(GasSensor* pSensor);

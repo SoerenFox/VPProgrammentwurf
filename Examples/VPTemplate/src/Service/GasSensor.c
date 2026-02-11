@@ -8,7 +8,7 @@
 #define MIN_SENSOR_VOLTAGE 2.5e6
 #define MAX_SENSOR_VOLTAGE 5e6
 
-int32_t gasSesonsrInitialize(GasSensor* pSensor, uint32_t convFactor) {
+int32_t gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
 
 	pSensor->sensorVoltage = 0;

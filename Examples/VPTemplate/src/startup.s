@@ -68,8 +68,8 @@ MAGIC_STACK_VALUE:
 
     /* Initialize the Stack-Pointer */
     /* Load address of initial_stack_pointer into R0 for. Symbol defined in Linker Script */
- 	ldr r0, = _start_of_stack
-    ldr r1, = _end_of_stack
+ 	ldr r0, = _end_of_stack
+    ldr r1, = _start_of_stack
     ldr r2, = MAGIC_STACK_VALUE
     ldr r2, [r2]
     b .loopFillStack
