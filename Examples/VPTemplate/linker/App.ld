@@ -137,21 +137,21 @@ SECTIONS
 
      _end_of_heap = .;
   } >RAM
- 
- .stack (NOLOAD):
+  
+  .stack (NOLOAD):
   {
     . = ALIGN(4);
 
-     _end_of_stack = .;
+    _end_of_stack = .;
     . += _size_of_stack;
 
     . = ALIGN(4);
 
-    _start_of_stack = .;
-    
-    
+     _start_of_stack = .;
+     
+    _initial_stack_pointer = _start_of_stack;
   } >RAM
-
+  
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {

@@ -80,10 +80,10 @@ MAGIC_STACK_VALUE:
 
 .loopFillStack:
 	cmp r0, r1
-	bne .fillStack    
+	bcc .fillStack    
     /* Set stack pointer */
     
-   	ldr r0, =_end_of_stack
+   	ldr r0, =_initial_stack_pointer
     mov   sp, r0
 
     /* Call the clock system intitialization function.*/

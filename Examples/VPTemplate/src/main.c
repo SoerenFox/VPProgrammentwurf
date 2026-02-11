@@ -85,12 +85,12 @@ int main(void)
     	int adcValue = adcReadChannel(ADC_INPUT0);
     	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
     	int32_t gasValue1 = gasSensorGetSensorValue(&gGasSensor1);
-    	outputLogf("Gas Sensor 1: %d\n", gasValue1);
+    	outputLogf("Gas Sensor 1: %d\n\r", gasValue1);
 
-    	adcValue = adcReadChannel(ADC_INPUT0);
-    	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
-    	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor1);
-    	outputLogf("Gas Sensor 2: %d\n", gasValue2);
+    	adcValue = adcReadChannel(ADC_INPUT1);
+    	gasSensorSetSensorVoltage(&gGasSensor2, adcValue);
+    	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor2);
+    	outputLogf("Gas Sensor 2: %d\n\r", gasValue2);
 
     	HAL_Delay(100);
     }
