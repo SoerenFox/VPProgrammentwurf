@@ -34,6 +34,8 @@
 
 #include "GlobalObjects.h"
 
+#include "GasSensor.h"
+
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
@@ -51,6 +53,8 @@ static int32_t initializePeripherals();
 /***** PRIVATE VARIABLES *****************************************************/
 static Scheduler gScheduler;            // Global Scheduler instance
 
+static GasSensor gGasSensor1;
+static GasSensor gGasSensor2;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
@@ -72,69 +76,22 @@ int main(void)
     // Initialize Scheduler
     schedInitialize(&gScheduler);
 
-    int globalCounter = 0;
-    uint8_t left = 0;
+    gasSesonsrInitialize(&gGasSensor1, 204);
+    gasSesonsrInitialize(&gGasSensor2, 204);
 
     while (1)
     {
-        // Read to buttons
-        Button_Status_t but1 = buttonGetButtonStatus(BTN_SW1);
-        Button_Status_t but2 = buttonGetButtonStatus(BTN_SW2);
-        Button_Status_t but3 = buttonGetButtonStatus(BTN_B1);
+    	int adcValue = adcReadChannel(ADC_INPUT0);
+    	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
+    	int32_t gasValue1 = gasSensorGetSensorValue(&gGasSensor1);
+    	outputLogf("Gas Sensor 1: %d\n", gasValue1);
 
-        // Read the POT1 input from ADC
-        int adcValue = adcReadChannel(ADC_INPUT0);
+    	adcValue = adcReadChannel(ADC_INPUT0);
+    	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
+    	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor1);
+    	outputLogf("Gas Sensor 2: %d\n", gasValue2);
 
-        // If SW1 is pressed, print some debug message on the terminal
-        if (but1 == BUTTON_PRESSED)
-        {
-            // Toggle all LEDs to the their functionality (Toggle frequency depends on HAL_Delay at end of loop)
-            ledToggleLED(LED0);
-            HAL_Delay(25);
-            ledToggleLED(LED1);
-            HAL_Delay(25);
-            ledToggleLED(LED2);
-            HAL_Delay(25);
-            ledToggleLED(LED3);
-            HAL_Delay(25);
-            ledToggleLED(LED4);
-            HAL_Delay(25);
-        }
-
-        // If SW2 is pressed, print the ADC digit value on the terminal
-        if (but2 == BUTTON_PRESSED)
-        {
-        	HAL_GPIO_WritePin(BEEP_GPIO_PORT, BEEP_PIN, GPIO_PIN_RESET);
-        }
-        else
-        {
-        	HAL_GPIO_WritePin(BEEP_GPIO_PORT, BEEP_PIN, GPIO_PIN_SET);
-        }
-
-        if (but3 == BUTTON_PRESSED)
-        {
-        	outputLogf("ADC Val: %d\n\r", adcValue);
-        }
-
-        globalCounter++;
-        if (globalCounter > 99)
-        {
-            globalCounter = 0;
-        }
-
-        if (left == 1)
-        {
-            displayShowDigit(LEFT_DISPLAY, (globalCounter / 10));
-        }
-        else
-        {
-            displayShowDigit(RIGHT_DISPLAY, (globalCounter % 10));
-        }
-
-        left = !left;
-
-        // Remove this HAL_Delay as soon as there is a Scheduler used
-        HAL_Delay(25);
+    	HAL_Delay(100);
     }
 }
 
