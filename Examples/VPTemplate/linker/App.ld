@@ -140,6 +140,7 @@ SECTIONS
   
   .stack (NOLOAD):
   {
+  	. = _end_of_ram - _size_of_stack;
     . = ALIGN(4);
 
     _end_of_stack = .;
