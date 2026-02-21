@@ -97,7 +97,6 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-
   /* Define a symbol for the load address of the initialized data
    * This address is located in FLASH
    */
@@ -146,14 +145,16 @@ SECTIONS
      _end_of_heap = .;
   } >RAM
   
-  .stack (NOLOAD) _end_of_ram - _size_of_stack:
+  .stack _end_of_ram - _size_of_stack (NOLOAD):
   {
-    _bottom_of_heap = .;
+    . = ALIGN(4);
+    
+    _bottom_of_stack = .;
     . += _size_of_stack;
     
     . = ALIGN(4);
     
-    _top_of_heap = .;
+    _top_of_stack = .;
     _initial_stack_pointer = .;
   } >RAM
 
