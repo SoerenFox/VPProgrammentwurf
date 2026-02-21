@@ -146,14 +146,12 @@ SECTIONS
      _end_of_heap = .;
   } >RAM
   
-  .stack (NOLOAD):
+  .stack (NOLOAD) _end_of_ram - _size_of_stack:
   {
-    . = _end_of_ram - _size_of_stack;
-    
     _bottom_of_heap = .;
     . += _size_of_stack;
     
-    .= ALIGN(4);
+    . = ALIGN(4);
     
     _top_of_heap = .;
     _initial_stack_pointer = .;
