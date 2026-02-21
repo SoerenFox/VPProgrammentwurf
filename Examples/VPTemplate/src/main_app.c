@@ -41,13 +41,21 @@
 
 
 /***** PRIVATE MACROS ********************************************************/
+#define STATE_INITIALIZATION     0
+#define STATE_PRE_OPERATIONAL    1
+#define STATE_OPERATIONAL        2
+#define STATE_EMERGENCY          3
+#define STATE_FAILURE            4
+#define STATE_TEST_MODE          5
+
+#define INIT_CHAR_NO	0
+#define INIT_CHAR_YES	1
 
 
 /***** PRIVATE TYPES *********************************************************/
 
 
 /***** PRIVATE PROTOTYPES ****************************************************/
-static int32_t initializePeripherals();
 
 
 /***** PRIVATE VARIABLES *****************************************************/
@@ -58,29 +66,20 @@ static GasSensor gGasSensor2;
 
 
 /***** PUBLIC FUNCTIONS ******************************************************/
+static int32_t initializePeripherals();
 
+void task100ms()
+
+{
+	ledToggleLED(LED0);
+}
 
 /**
  * @brief Main function of System
  */
 int main(void)
 {
-	// Initialize the HAL
-	    HAL_Init();
-
-	    // Initialize the System Clock
-	    SystemClock_Config();
-
-	    // Initialize Peripherals
-	    initializePeripherals();
-
-	    // Initialize Scheduler
-	    schedInitialize(&gScheduler);
-
-    gasSensorInitialize(&gGasSensor1, 204);
-    gasSensorInitialize(&gGasSensor2, 204);
-
-    while (1)
+/*    while (1)
     {
     	int adcValue = adcReadChannel(ADC_INPUT0);
     	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
@@ -93,7 +92,141 @@ int main(void)
     	outputLogf("Gas Sensor 2: %d\n\r", gasValue2);
 
     	HAL_Delay(100);
-    }
+    }*/
+
+    /*uint32_t lastRuntime = 0;
+
+    while (1)
+    {
+    	uint32_t currentTime = HAL_GetTick();
+
+    	if ((currentTime - lastRuntime) > 100) {
+    		ledToggleLED(LED0);
+
+    		lastRuntime = HAL_GetTick();
+    	}
+    }*/
+
+	    	uint32_t applicationState = STATE_INITIALIZATION;
+
+	         while(1)
+	         {
+	             switch(applicationState)
+	             {
+	                 /***************************************************************/
+	                 case STATE_INITIALIZATION:
+	                 {
+	                     // HW initialisieren
+	                     // Sensoren prüfen
+	                     // Kommunikationsschnittstellen starten
+	                     // Selbsttest durchführen
+
+	                	 // Initialize the HAL
+	                	 HAL_Init();
+
+	                	 // Initialize the System Clock
+	                	 SystemClock_Config();
+
+	                	 // Initialize Peripherals
+	                	 initializePeripherals();
+
+	                	 // Initialize Scheduler
+	                	 schedInitialize(&gScheduler);
+
+	                	 gasSensorInitialize(&gGasSensor1, 204);
+	                	 gasSensorInitialize(&gGasSensor2, 204);
+	                	 gScheduler.pGetHALTick = HAL_GetTick;
+	                	 gScheduler.pTask_100ms = task100ms;
+
+	                	 applicationState = STATE_PRE_OPERATIONAL;
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 case STATE_PRE_OPERATIONAL:
+	                 {
+	                     // System bereit aber noch nicht aktiv
+	                     // Auf SWITCH_OPERATIONAL warten
+
+	                     if (buttonGetButtonStatus(BTN_SW1) == BUTTON_PRESSED)
+	                    	 while(1) {
+	                    		 if(buttonGetButtonStatus(BTN_SW1) == BUTTON_RELEASED) {
+	                    			 applicationState = STATE_OPERATIONAL;
+	                    		 }
+	                    	 }
+
+	                     // if (ERROR)
+	                     //     applicationState = STATE_FAILURE;
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 case STATE_OPERATIONAL:
+	                 {
+	                     // Sensorwerte zyklisch lesen
+	                     // Grenzwerte prüfen
+	                     // Monitoring aktiv
+
+	                	 if (buttonGetButtonStatus(BTN_SW1) == BUTTON_PRESSED)
+	                		 applicationState = STATE_PRE_OPERATIONAL;
+
+	                	 if (buttonGetButtonStatus(BTN_SW2) == BUTTON_PRESSED)
+	                	 	 applicationState = STATE_OPERATIONAL;
+
+	                     // if (SENSOR_DEFECT)
+	                     //     applicationState = STATE_FAILURE;
+
+	                     // if (TRIGGER_EMERGENCY)
+	                     //     applicationState = STATE_EMERGENCY;
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 case STATE_EMERGENCY:
+	                 {
+	                     // Notfall auslösen
+	                     // Alarm aktivieren
+	                     // System sichern
+
+	                     // if (ALARM_RESET)
+	                     //     applicationState = STATE_OPERATIONAL;
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 case STATE_FAILURE:
+	                 {
+	                     // Fehler anzeigen
+	                     // System in sicheren Zustand bringen
+	                     // ggf. Reset vorbereiten
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 case STATE_TEST_MODE:
+	                 {
+	                     // Manuellen Alarmtest durchführen
+	                     // Testreaktionen prüfen
+
+	                     // danach zurücksetzen
+
+	                     break;
+	                 }
+
+	                 /***************************************************************/
+	                 default:
+	                 {
+	                     // Sicherheitsfallback
+	                     applicationState = STATE_INITIALIZATION;
+	                     break;
+	                 }
+	             }
+	         }
 }
 
 /***** PRIVATE FUNCTIONS *****************************************************/
