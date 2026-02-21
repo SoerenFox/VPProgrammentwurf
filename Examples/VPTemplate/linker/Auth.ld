@@ -35,9 +35,9 @@ ENTRY(Reset_Handler)
 MEMORY
 {
   /* RAM Memory Region incl. SRAM1 and SRAM2 */
-  RAM    (rw)      : ORIGIN = 0x20000000,  LENGTH = 128K
+  RAM    (rw)      : ORIGIN = 0x20000000,  LENGTH = 16K
   /* FLASH Memory Region using mapped address 0x08000000. */
-  FLASH  (rx)      : ORIGIN = 0x08000000,  LENGTH = 512K
+  FLASH  (rx)      : ORIGIN = 0x08000000,  LENGTH = 64K
 }
 
 /***** GLOBAL SYMBOLS ********************************************************/
@@ -110,6 +110,25 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
+  /* Define a symbol for the load address of the initialized a
+   * This address is located in FLASH
+   */
+  _sloadauth = LOADADDR(.auth);
+  /* Initialized auth section */
+  .auth :
+  {
+    . = ALIGN(4);
+    
+    _sauth = .;
+	
+	*(.data)
+	*(.data*)
+    
+    . = ALIGN(4);
+    
+    _eauth = .;
+  } >RAM AT> FLASH
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss (NOLOAD):
@@ -124,30 +143,6 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
 
-  } >RAM
-
-  .heap (NOLOAD):
-  {
-    . = ALIGN(4);
-
-    _start_of_heap = .;
-    . += _size_of_heap;
-
-    . = ALIGN(4);
-
-     _end_of_heap = .;
-  } >RAM
- 
- .stack (NOLOAD):
-  {
-    . = ALIGN(4);
-
-     _end_of_stack = .;
-    . += _size_of_stack;
-
-    . = ALIGN(4);
-
-    _start_of_stack = .;
   } >RAM
 
   /* Remove information from the standard libraries */

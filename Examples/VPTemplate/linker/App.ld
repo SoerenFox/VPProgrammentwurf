@@ -35,9 +35,9 @@ ENTRY(StartApp_Handler)
 MEMORY
 {
   /* RAM Memory Region incl. SRAM1 and SRAM2 */
-  RAM    (rw)      : ORIGIN = 0x20000000,  LENGTH = 128K
+  RAM    (rw)      : ORIGIN = 0x20004000,  LENGTH = 64K
   /* FLASH Memory Region using mapped address 0x08000000. */
-  FLASH  (rx)      : ORIGIN = 0x08000000,  LENGTH = 512K
+  FLASH  (rx)      : ORIGIN = 0x08010000,  LENGTH = 128K
 }
 
 /***** GLOBAL SYMBOLS ********************************************************/
@@ -45,11 +45,11 @@ MEMORY
 /* Symbols used for memory management
  * This includes the stack and also a possible heap memory
  */
-_size_of_stack = 0x200;                             /* Size of stack in bytes */
+_size_of_stack = 0x4096;                             /* Size of stack in bytes */
 _size_of_heap  = 0x0;                               /* Size of heap in bytes */
 
 /* Highest usable address of the RAM. */
-_end_of_ram = ORIGIN(RAM) + LENGTH(RAM) - 4;        /* End of RAM */
+_end_of_ram = ORIGIN(RAM) + LENGTH(RAM) - 4;        /* End of RAM = 0x20014000 */
 _initial_stack_pointer = _end_of_ram;               /* Set the symbol for initial stack pointer */
 
 /***** SECTIONS **************************************************************/
@@ -57,6 +57,14 @@ _initial_stack_pointer = _end_of_ram;               /* Set the symbol for initia
 /* Define output sections */
 SECTIONS
 {
+  /* Section for signature */
+  .signature :
+  {
+    . = ALIGN(4);
+    KEEP(*(.signature))
+    . = ALIGN(4);
+  } >FLASH
+  
   /* Section for Interrupt Vector Table */
   .isr_vector :
   {
@@ -140,19 +148,17 @@ SECTIONS
   
   .stack (NOLOAD):
   {
-  	. = _end_of_ram - _size_of_stack;
-    . = ALIGN(4);
-
-    _end_of_stack = .;
+    . = _end_of_ram - _size_of_stack;
+    
+    _bottom_of_heap = .;
     . += _size_of_stack;
-
-    . = ALIGN(4);
-
-     _start_of_stack = .;
-     
-    _initial_stack_pointer = _start_of_stack;
+    
+    .= ALIGN(4);
+    
+    _top_of_heap = .;
+    _initial_stack_pointer = .;
   } >RAM
-  
+
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
