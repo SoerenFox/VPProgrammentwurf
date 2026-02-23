@@ -108,5 +108,5 @@ MAGIC_STACK_VALUE:
 .size StartApp_Handler, .-StartApp_Handler
 
 
-/* .isr_vector offset -> Signature -> but Bit [0:8] must be 0 –> 1 0000 0000 = 0x200 in Hex */
+/* .isr_vector offset -> Signature -> but Bit [0:8] must be 0 –> 10 0000 0000 = 0x200 in Hex */
 _app_vector_table = 0x08010200
