@@ -108,12 +108,5 @@ MAGIC_STACK_VALUE:
 .size StartApp_Handler, .-StartApp_Handler
 
 
-/* ---- Vector table address constant ----
-   This MUST match your linker layout:
-   FLASH origin = 0x08010000
-   .signature   = 4 bytes
-   => .isr_vector begins at 0x08010004
-
-   If signature size changes, update this or (better) export a linker symbol for it.
-*/
+/* .isr_vector offset -> Signature -> but Bit [0:8] must be 0 –> 1 0000 0000 = 0x200 in Hex */
 _app_vector_table = 0x08010200
