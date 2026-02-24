@@ -46,7 +46,6 @@
 #define STATE_OPERATIONAL        2
 #define STATE_EMERGENCY          3
 #define STATE_FAILURE            4
-#define STATE_TEST_MODE          5
 
 #define INIT_CHAR_NO	0
 #define INIT_CHAR_YES	1
@@ -203,17 +202,6 @@ int main(void)
 	                     // Fehler anzeigen
 	                     // System in sicheren Zustand bringen
 	                     // ggf. Reset vorbereiten
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 case STATE_TEST_MODE:
-	                 {
-	                     // Manuellen Alarmtest durchführen
-	                     // Testreaktionen prüfen
-
-	                     // danach zurücksetzen
 
 	                     break;
 	                 }
