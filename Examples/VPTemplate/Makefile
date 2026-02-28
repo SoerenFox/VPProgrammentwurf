@@ -81,6 +81,8 @@ CFLAGS += -I$(SRC_DIR)/OS
 CFLAGS += -I$(SRC_DIR)/Service
 # Include files for Utils
 CFLAGS += -I$(SRC_DIR)/Util
+# Include files for Auth
+CFLAGS += -I$(SRC_DIR)/Auth
 
 ###############################################################################
 # Source files for the HAL library
