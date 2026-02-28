@@ -15,6 +15,7 @@
 
 
 /***** INCLUDES **************************************************************/
+#include <stdint.h>
 #include "stm32g4xx_hal.h"
 #include "System.h"
 
@@ -38,7 +39,8 @@
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
-
+__attribute__((section(".signature"), used))
+const uint8_t g_signature[0x200] = { 'U','M','M','S' };
 
 /***** PRIVATE MACROS ********************************************************/
 #define STATE_INITIALIZATION     0
