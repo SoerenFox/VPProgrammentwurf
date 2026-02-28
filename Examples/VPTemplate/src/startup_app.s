@@ -37,7 +37,7 @@
 .global StartApp_Handler
 StartApp_Handler:
     /* Relocate Vector Table because .signature is before .isr_vector */
-    ldr r0, =_app_vector_table      /* computed constant below */
+    ldr r0, =_isr_vector;      
     ldr r1, =SCB_VTOR
     str r0, [r1]
 
@@ -106,7 +106,3 @@ MAGIC_STACK_VALUE:
     bl main
     bx lr
 .size StartApp_Handler, .-StartApp_Handler
-
-
-/* .isr_vector offset -> Signature -> but Bit [0:8] must be 0 –> 10 0000 0000 = 0x200 in Hex */
-_app_vector_table = 0x08010200
