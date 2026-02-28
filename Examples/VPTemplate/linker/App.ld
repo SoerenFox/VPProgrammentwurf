@@ -65,10 +65,11 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
   
+  /* Align with [0:8] as 0 -> 0x200 in Hex */ 
   /* Section for Interrupt Vector Table */
-  .isr_vector :
+  .isr_vector ALIGN(0x200):
   {
-    . = ALIGN(4);
+  	_isr_vector = .;
     /* Include the .isr_vector section which must include the vector interrupt table */
     KEEP(*(.isr_vector))
     . = ALIGN(4);
