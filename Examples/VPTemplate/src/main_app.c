@@ -120,6 +120,8 @@ int main(void)
 	                     // Kommunikationsschnittstellen starten
 	                     // Selbsttest durchführen
 
+						 __HAL_RCC_AHB1_FORCE_RESET();
+						 __HAL_RCC_AHB1_RELEASE_RESET();
 	                	 // Initialize the HAL
 	                	 HAL_Init();
 
