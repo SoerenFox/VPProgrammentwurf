@@ -39,8 +39,7 @@
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
-__attribute__((section(".signature"), used))
-const uint8_t g_signature[0x200] = { 'U','M','M','S' };
+const char signature[] __attribute__ ((section (".signature"))) = "UMMS";
 
 /***** PRIVATE MACROS ********************************************************/
 #define STATE_INITIALIZATION     0
