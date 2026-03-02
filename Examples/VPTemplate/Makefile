@@ -73,6 +73,8 @@ CFLAGS += -I$(LIB_DIR)/STM32G4xx/Include
 
 # Include files for App
 CFLAGS += -I$(SRC_DIR)/App
+# Include files for Auth
+CFLAGS += -I$(SRC_DIR)/Auth
 # Include files for HAL
 CFLAGS += -I$(SRC_DIR)/HAL
 # Include files for OS
@@ -81,8 +83,6 @@ CFLAGS += -I$(SRC_DIR)/OS
 CFLAGS += -I$(SRC_DIR)/Service
 # Include files for Utils
 CFLAGS += -I$(SRC_DIR)/Util
-# Include files for Auth
-CFLAGS += -I$(SRC_DIR)/Auth
 
 ###############################################################################
 # Source files for the HAL library
@@ -136,6 +136,7 @@ vpath %.c $(dir $(APP_SRC_C))
 ###############################################################################
 AUTH_SRC_C += $(SRC_DIR)/main_auth.c
 AUTH_SRC_C += $(SRC_DIR)/System.c
+AUTH_SRC_C += $(wildcard $(SRC_DIR)/Auth/*.c)
 AUTH_SRC_C += $(wildcard $(SRC_DIR)/HAL/*.c)
 AUTH_SRC_C += $(wildcard $(SRC_DIR)/OS/*.c)
 AUTH_SRC_C += $(wildcard $(SRC_DIR)/Service/*.c)
