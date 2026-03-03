@@ -183,13 +183,33 @@ $(BLD_DIR)/app.elf: $(OBJ_DIR)/libstm32.a $(OBJS_ASM_APP) $(APP_OBJS_C) | $(APP_
 	@echo "  LD      $(notdir $@)"
 	@$(LD) $^ $(LDFLAGS) $(INC) -T$(APP_LD_FILE) -Wl,-Map $(BLD_DIR)/app.map -o $@
 
+$(BLD_DIR)/app.bin: $(BLD_DIR)/app.elf
+	@echo "  OBJCOPY $(notdir $@)"
+	@arm-none-eabi-objcopy $< -O binary $@
+
 $(BLD_DIR)/auth.elf: $(OBJ_DIR)/libstm32.a $(OBJS_ASM_AUTH) $(AUTH_OBJS_C) | $(AUTH_LD_FILE)
 	@echo "  LD      $(notdir $@)"
 	@$(LD) $^ $(LDFLAGS) $(INC) -T$(AUTH_LD_FILE) -Wl,-Map $(BLD_DIR)/auth.map -o $@
 
-$(BLD_DIR)/%.bin: $(BLD_DIR)/%.elf
-	@echo "  OBJCOPY $(notdir $@)"
-	@arm-none-eabi-objcopy $< -O binary $@
+###############################################################################
+# Encrypt .auth section inside auth.elf before creating auth.bin
+###############################################################################
+
+PYTHON        ?= python3
+ENCRYPT_SCRIPT = ../../Scripts/encrypt_file.py
+AUTH_SECTION_RAW = $(BLD_DIR)/auth_section.bin
+AUTH_SECTION_ENC = $(BLD_DIR)/auth_section.bin.enc
+
+# Patch auth.elf in-place before creating auth.bin
+$(BLD_DIR)/auth.bin: $(BLD_DIR)/auth.elf $(ENCRYPT_SCRIPT)
+	@echo "  OBJCOPY dump .auth"
+	@$(OBJCOPY) --dump-section .auth=$(AUTH_SECTION_RAW) $(BLD_DIR)/auth.elf
+	@echo "  PYTHON  encrypt .auth"
+	@$(PYTHON) $(ENCRYPT_SCRIPT) -o $(AUTH_SECTION_ENC) $(AUTH_SECTION_RAW)
+	@echo "  OBJCOPY update .auth in auth.elf"
+	@$(OBJCOPY) --update-section .auth=$(AUTH_SECTION_ENC) $(BLD_DIR)/auth.elf
+	@echo "  OBJCOPY create auth.bin"
+	@$(OBJCOPY) $(BLD_DIR)/auth.elf -O binary $(BLD_DIR)/auth.bin
 
 clean:
 	rm -f $(BLD_DIR)/*.elf
