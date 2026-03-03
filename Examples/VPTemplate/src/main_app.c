@@ -37,6 +37,8 @@
 
 #include "GasSensor.h"
 
+#include "AppTasks.h"
+
 
 /***** PRIVATE CONSTANTS *****************************************************/
 const char signature[] __attribute__ ((section (".signature"))) = "UMMS";
@@ -67,18 +69,7 @@ static GasSensor gGasSensor2;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 static int32_t initializePeripherals();
-void task10ms()
-		 {
-		 	ledToggleLED(LED0);
-		 }
-void task50ms()
-		 {
-			ledToggleLED(LED1);
-		 }
-void task250ms()
-		 {
-			ledToggleLED(LED2);
-		 }
+
 /**
  * @brief Main function of System
  */
@@ -102,18 +93,14 @@ int main(void)
 	 gasSensorInitialize(&gGasSensor1, 204);
 	 gasSensorInitialize(&gGasSensor2, 204);
 	 gScheduler.pGetHALTick = HAL_GetTick;
-	 gScheduler.pTask_50ms = task10ms;
-	 gScheduler.pTask_50ms = task50ms;
-	 gScheduler.pTask_50ms = task250ms;
+	 gScheduler.pTask_10ms = taskApp10ms;
+	 gScheduler.pTask_50ms = taskApp50ms;
+	 gScheduler.pTask_250ms = taskApp250ms;
 
 
 	 while(1)
 	 {
-		 void task10ms();
-
-		 void task50ms();
-
-		 void task250ms();
+		 schedCycle(&gScheduler);
 	 }
 
 

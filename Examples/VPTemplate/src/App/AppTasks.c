@@ -17,6 +17,12 @@
 /***** INCLUDES **************************************************************/
 #include "Scheduler.h"
 #include "AppTasks.h"
+#include "UARTModule.h"
+#include "ButtonModule.h"
+#include "LEDModule.h"
+#include "DisplayModule.h"
+#include "ADCModule.h"
+#include "TimerModule.h"
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
@@ -38,18 +44,17 @@
 
 void taskApp10ms()
 {
-
+	ledToggleLED(LED1);
 }
-
 
 void taskApp50ms()
 {
-
+	ledToggleLED(LED2);
 }
 
 void taskApp250ms()
 {
-
+	ledToggleLED(LED3);
 }
 
 

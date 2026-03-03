@@ -39,7 +39,7 @@ typedef struct _EMAFilterData
     bool firstValueAvailable;                   //!< Flag to indicate whether there was already a value set as prev value
     int32_t alpha;                              //!< Alpha value (filter constant) as scaled value
     int32_t previousValue;                      //!< Previous value of the filter output
-    int32_t scalingFactor;                      //!< Used scaling factor
+    int32_t scalingFactor;                       //!< Used scaling factor
 } EMAFilterData_t;
 
 

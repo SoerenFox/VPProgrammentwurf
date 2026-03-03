@@ -45,14 +45,38 @@
 
 int32_t schedInitialize(Scheduler* pScheduler)
 {
+    if (!pScheduler) return SCHED_ERR_INVALID_PTR;
+
+    uint32_t now = 0;
+
+    pScheduler->halTick_10ms   = now;
+    pScheduler->halTick_50ms   = now;
+    pScheduler->halTick_250ms  = now;
 
     return SCHED_ERR_OK;
 }
 
+static void runSlot(uint32_t now, uint32_t period, uint32_t* pLast, CyclicFunction task)
+{
+    // Overflow-safe: unsigned subtraction
+    if ((uint32_t)(now - *pLast) >= period)
+    {
+		*pLast = now;
+		if (task) task();
+
+    }
+}
 
 int32_t schedCycle(Scheduler* pScheduler)
 {
+    if (!pScheduler) return SCHED_ERR_INVALID_PTR;
+    if (!pScheduler->pGetHALTick) return SCHED_ERR_INVALID_PTR;
 
+    uint32_t now = pScheduler->pGetHALTick();
+
+    runSlot(now, HAL_TICK_VALUE_10MS,   &pScheduler->halTick_10ms,   pScheduler->pTask_10ms);
+    runSlot(now, HAL_TICK_VALUE_50MS,   &pScheduler->halTick_50ms,   pScheduler->pTask_50ms);
+    runSlot(now, HAL_TICK_VALUE_250MS,  &pScheduler->halTick_250ms,  pScheduler->pTask_250ms);
 
     return SCHED_ERR_OK;
 }

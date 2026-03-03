@@ -89,6 +89,8 @@ typedef struct _Scheduler
  */
 int32_t schedInitialize(Scheduler* pScheduler);
 
+static void runSlot(uint32_t now, uint32_t period, uint32_t* pLast, CyclicFunction task);
+
 /**
  * @brief Cyclic function for the scheduler
  * This function should be called in the super loop of the system
