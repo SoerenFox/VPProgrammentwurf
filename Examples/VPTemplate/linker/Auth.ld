@@ -121,8 +121,8 @@ SECTIONS
     
     _sauth = .;
 	
-	*(.data)
-	*(.data*)
+	*(.auth)
+	*(.auth*)
     
     . = ALIGN(4);
     
