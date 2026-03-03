@@ -37,8 +37,12 @@
 /***** PRIVATE TYPES *********************************************************/
 
 
-/***** PRIVATE PROTOTYPES ****************************************************/
-static int32_t onStateRunning(State_t* pState, int32_t eventID);
+/***** PRIVATE FUNCTIONS *****************************************************/
+static int32_t onEntryInitialization(State_t* pState, int32_t eventID);
+static int32_t onStatePreOperational(State_t* pState, int32_t eventID);
+static int32_t onStateOperational(State_t* pState, int32_t eventID);
+static int32_t onStateEmergency(State_t* pState, int32_t eventID);
+static int32_t onEntryFailure(State_t* pState, int32_t eventID);
 
 /***** PRIVATE VARIABLES *****************************************************/
 
@@ -49,11 +53,14 @@ static int32_t onStateRunning(State_t* pState, int32_t eventID);
  * in the state machine. There are no transistions or events defined
  *
  */
+
 static State_t gStateList[] =
 {
-    {STATE_ID_STARTUP, 0,  		0,                  0,              false},
-    {STATE_ID_RUNNING, 0,       onStateRunning,     0,  			false},
-    {STATE_ID_FAILURE, 0,  		0,                  0,              false}
+    { APP_STATE_INITIALIZATION, onEntryInitialization, 	0, 						0, false },
+    { APP_STATE_PREOPERATIONAL, 0, 						onStatePreOperational, 	0, false },
+    { APP_STATE_OPERATIONAL,    0,    					onStateOperational,    	0, false },
+    { APP_STATE_EMERGENCY,      0,      				onStateEmergency,      	0, false },
+    { APP_STATE_FAILURE,        onEntryFailure,        	0,        				0, false },
 };
 
 /**
@@ -65,9 +72,20 @@ static State_t gStateList[] =
  */
 static StateTableEntry_t gStateTableEntries[] =
 {
-    {STATE_ID_STARTUP,          STATE_ID_RUNNING,           EVT_ID_INIT_READY,          0,      0,      0},
-    {STATE_ID_STARTUP,          STATE_ID_FAILURE,           EVT_ID_SENSOR_FAILED,       0,      0,      0},
-    {STATE_ID_RUNNING,          STATE_ID_FAILURE,           EVT_ID_SENSOR_FAILED,       0,      0,      0},
+    /* Initialization */
+    { APP_STATE_INITIALIZATION, APP_STATE_PREOPERATIONAL, APP_EVT_INIT_DONE,              0, 0, 0 },
+    { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_ERROR,                  0, 0, 0 },
+
+    /* PreOperational */
+    { APP_STATE_PREOPERATIONAL, APP_STATE_OPERATIONAL,    APP_EVT_SWITCH_OPERATIONAL,     0, 0, 0 },
+
+    /* Operational */
+    { APP_STATE_OPERATIONAL,    APP_STATE_PREOPERATIONAL, APP_EVT_SWITCH_PRE_OPERATIONAL, 0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_FAILURE,        APP_EVT_SENSOR_DEFECT,          0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_EMERGENCY,      APP_EVT_TRIGGER_EMERGENCY,      0, 0, 0 },
+
+    /* Emergency */
+    { APP_STATE_EMERGENCY,      APP_STATE_OPERATIONAL,    APP_EVT_ALARM_RESET,            0, 0, 0 },
 };
 
 /**
@@ -79,31 +97,108 @@ static StateTable_t gStateTable;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
-int32_t sampleAppInitialize()
+int32_t applicationInit(void)
 {
     gStateTable.pStateList = gStateList;
     gStateTable.stateCount = sizeof(gStateList) / sizeof(State_t);
-    int32_t result = stateTableInitialize(&gStateTable, gStateTableEntries, sizeof(gStateTableEntries) / sizeof(StateTableEntry_t), STATE_ID_STARTUP);
+    int32_t result = stateTableInitialize(&gStateTable, gStateTableEntries, sizeof(gStateTableEntries) / sizeof(StateTableEntry_t), APP_STATE_INITIALIZATION);
 
     return result;
 }
 
-int32_t sampleAppRun()
+int32_t applicationRunCyclic(void)
 {
     int32_t result = stateTableRunCyclic(&gStateTable);
     return result;
 }
 
-int32_t sameplAppSendEvent(int32_t eventID)
+int32_t applicationSendEvent(int32_t eventID)
 {
     int32_t result = stateTableSendEvent(&gStateTable, eventID);
     return result;
 }
 
+int32_t applicationGetCurrentState(void)
+{
+    return gStateTable.currentStateID;
+}
+
 
 /***** PRIVATE FUNCTIONS *****************************************************/
-static int32_t onStateRunning(State_t* pState, int32_t eventID)
+static int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 {
-	return 0;
+    (void)pState; (void)eventID;
+
+    /* TODO: init start (one-time):
+       - init modules
+       - start self-tests
+       - start timers
+       When init is COMPLETE, trigger event:
+       applicationSendEvent(APP_EVT_INIT_DONE);
+
+       If init FAILS:
+       applicationSendEvent(APP_EVT_ERROR);
+    */
+
+    return 0;
+}
+
+/* Called cyclic while in PREOPERATIONAL (no onEntry used) */
+static int32_t onStatePreOperational(State_t* pState, int32_t eventID)
+{
+    (void)pState; (void)eventID;
+
+    /* TODO: waiting for enable / command:
+       if (enable_command_received)
+           applicationSendEvent(APP_EVT_SWITCH_OPERATIONAL);
+    */
+
+    return 0;
+}
+
+/* Called cyclic while in OPERATIONAL */
+static int32_t onStateOperational(State_t* pState, int32_t eventID)
+{
+    (void)pState; (void)eventID;
+
+    /* TODO: monitoring & checks:
+       if (sensor_defect_detected)
+           applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+
+       if (emergency_condition_detected)
+           applicationSendEvent(APP_EVT_TRIGGER_EMERGENCY);
+
+       if (manual_switch_to_preop)
+           applicationSendEvent(APP_EVT_SWITCH_PRE_OPERATIONAL);
+    */
+
+    return 0;
+}
+
+/* Called cyclic while in EMERGENCY */
+static int32_t onStateEmergency(State_t* pState, int32_t eventID)
+{
+    (void)pState; (void)eventID;
+
+    /* TODO:
+       - ensure emergency outputs are active (depending on your architecture you may want this in entry)
+       - wait for reset condition / ack
+       if (reset_condition)
+           applicationSendEvent(APP_EVT_ALARM_RESET);
+    */
+
+    return 0;
+}
+
+/* Called once after transition into FAILURE */
+static int32_t onEntryFailure(State_t* pState, int32_t eventID)
+{
+    (void)pState; (void)eventID;
+
+    /* TODO: enter safe state, latch fault, log
+       No transitions out of FAILURE in your table.
+    */
+
+    return 0;
 }
 

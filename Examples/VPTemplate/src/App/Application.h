@@ -22,22 +22,27 @@
 
 
 /***** MACROS ****************************************************************/
-#define STATE_ID_STARTUP        1       //!< Example State for Startup
-#define STATE_ID_RUNNING        2       //!< Example State for Runing
-#define STATE_ID_FAILURE        3       //!< Example State for Failure
 
-#define EVT_ID_INIT_READY       1       //!< Event ID for INIT_READY
-#define EVT_ID_SENSOR_FAILED    2       //!< Event ID for Sensor Failure
+/* ===== States ===== */
+#define APP_STATE_INITIALIZATION     1
+#define APP_STATE_PREOPERATIONAL     2
+#define APP_STATE_OPERATIONAL        3
+#define APP_STATE_EMERGENCY          4
+#define APP_STATE_FAILURE            5
 
-/***** TYPES *****************************************************************/
+/* ===== Events ===== */
+#define APP_EVT_INIT_DONE                1
+#define APP_EVT_ERROR                    2
+#define APP_EVT_SWITCH_OPERATIONAL       3
+#define APP_EVT_SWITCH_PRE_OPERATIONAL   4
+#define APP_EVT_SENSOR_DEFECT            5
+#define APP_EVT_TRIGGER_EMERGENCY        6
+#define APP_EVT_ALARM_RESET              7
 
-
-/***** PROTOTYPES ************************************************************/
-
-int32_t sampleAppInitialize();
-
-int32_t sampleAppRun();
-
-int32_t sameplAppSendEvent(int32_t eventID);
+/* ===== API ===== */
+int32_t applicationInit(void);
+int32_t applicationRunCyclic(void);
+int32_t applicationSendEvent(int32_t eventID);
+int32_t applicationGetCurrentState(void);
 
 #endif

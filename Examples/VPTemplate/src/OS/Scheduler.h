@@ -59,6 +59,9 @@ typedef struct _Scheduler
     uint32_t halTick_10ms;              //!< Timestamp for last execution of 10ms task
     CyclicFunction pTask_10ms;          //!< Function pointer to 10ms cyclic task function
 
+    uint32_t halTick_50ms;              //!< Timestamp for last execution of 50ms task
+    CyclicFunction pTask_50ms;          //!< Function pointer to 50ms cyclic task function
+
     uint32_t halTick_100ms;             //!< Timestamp for last execution of 100ms task
     CyclicFunction pTask_100ms;         //!< Function pointer to 100ms cyclic task function
 

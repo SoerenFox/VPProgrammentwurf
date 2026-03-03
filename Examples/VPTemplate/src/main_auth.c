@@ -39,10 +39,10 @@
 
 
 /***** PRIVATE MACROS ********************************************************/
-#define STATE_BOOTUP		1
-#define STATE_PREPARE_APP	2
-#define STATE_START_APP		3
-#define STATE_FAILURE		4
+#define AUTH_STATE_BOOTUP		1
+#define AUTH_STATE_PREPARE_APP	2
+#define AUTH_STATE_START_APP	3
+#define AUTH_STATE_FAILURE		4
 
 #define CHECK_FOR_A			0
 #define WAIT_FOR_KEY		1
@@ -65,7 +65,7 @@
 #define KEY_TIMEOUT             -1
 #define KEY_TOO_LONG            -2
 
-static uint32_t authenticatorState = STATE_BOOTUP;
+static uint32_t authenticatorState = AUTH_STATE_BOOTUP;
 static uint32_t prepareAppSubState = CHECK_FOR_A;
 static uint8_t gotValideInitChar = 0;
 static uint8_t  g_keyBuf[KEY_MAX_LEN + 1]; // +1 für \0
@@ -104,7 +104,7 @@ int main(void)
 	// keine lokalen static valiables sondern globale
 		switch (authenticatorState)
 		{
-			case STATE_BOOTUP:
+			case AUTH_STATE_BOOTUP:
 			{
 
 				__HAL_RCC_AHB1_FORCE_RESET();
@@ -117,14 +117,14 @@ int main(void)
 				// Initialize Peripherals
 				initializePeripherals();
 
-				authenticatorState = STATE_PREPARE_APP;
+				authenticatorState = AUTH_STATE_PREPARE_APP;
 			}
 			break;
 
-			case STATE_PREPARE_APP:
+			case AUTH_STATE_PREPARE_APP:
 			{
 				int newState = prepareApp();
-				if(newState != STATE_PREPARE_APP)
+				if(newState != AUTH_STATE_PREPARE_APP)
 				{
 					authenticatorState = newState;
 				}
@@ -132,13 +132,13 @@ int main(void)
 			}
 			break;
 
-			case STATE_START_APP:
+			case AUTH_STATE_START_APP:
 			{
 				// Go to main_app
 			}
 			break;
 
-			case STATE_FAILURE:
+			case AUTH_STATE_FAILURE:
 			{
 				ledSetLED(LED4, LED_ON);
 			}
@@ -162,14 +162,14 @@ static int32_t prepareApp(void)
             if (g_initStartTick == 0u)
             {
                 g_initStartTick = now;
-                ledSetLED(LED1, GPIO_PIN_RESET); // D1 sicher aus
+                ledSetLED(LED1, LED_OFF); // D1 sicher aus
             }
 
             // Timeout 15s: wenn 'A' nicht kommt -> Failure
             if ((now - g_initStartTick) >= TIMEOUT_INIT_15S_MS)
             {
-                ledSetLED(LED1, GPIO_PIN_RESET);
-                return STATE_FAILURE;
+                ledSetLED(LED1, LED_OFF);
+                return AUTH_STATE_FAILURE;
             }
 
             // 'A' prüfen (nicht-blockierend)
@@ -194,13 +194,13 @@ static int32_t prepareApp(void)
             if (keyStatus == KEY_DONE)
             {
                 // Key komplett empfangen -> weiter
-                ledSetLED(LED1, GPIO_PIN_RESET); // D1 aus bevor wir weitergehen
+                ledSetLED(LED1, LED_OFF); // D1 aus bevor wir weitergehen
                 prepareAppSubState = DECRYPT_KEY;
             }
             else if (keyStatus == KEY_TIMEOUT || keyStatus == KEY_TOO_LONG)
             {
-                ledSetLED(LED1, GPIO_PIN_RESET);
-                return STATE_FAILURE;
+                ledSetLED(LED1, LED_OFF);
+                return AUTH_STATE_FAILURE;
             }
             else
             {
@@ -215,15 +215,15 @@ static int32_t prepareApp(void)
             // Beispiel:
             // uint32_t decryptedKey = decryptKey(g_keyBuf, g_keyLen);
 
-            ledSetLED(LED1, GPIO_PIN_RESET);
-            return STATE_START_APP;
+            ledSetLED(LED1, LED_OFF);
+            return AUTH_STATE_START_APP;
         }
 
         default:
             break;
     }
 
-    return STATE_PREPARE_APP;
+    return AUTH_STATE_PREPARE_APP;
 }
 
 static void prepareApp_ResetKeyReception(void)
@@ -238,7 +238,7 @@ static void prepareApp_ResetKeyReception(void)
     }
 
     // LED D1 initial aus (wird nach 10s an / nach 30s blinkend)
-    ledSetLED(LED1, GPIO_PIN_RESET);
+    ledSetLED(LED1, LED_OFF);
 
     // init-wait timing nicht mehr nötig
     g_initStartTick = 0u;
@@ -258,11 +258,11 @@ static int32_t checkForKey(void)
     // LED-Stufen: 0..10s OFF, 10..30s ON, ab 30s BLINK
     if (elapsed < KEY_STAGE1_10S_MS)
     {
-        ledSetLED(LED1, GPIO_PIN_RESET);
+        ledSetLED(LED1, LED_OFF);
     }
     else if (elapsed < KEY_STAGE2_30S_MS)
     {
-        ledSetLED(LED1, GPIO_PIN_SET);
+        ledSetLED(LED1, LED_ON);
     }
     else
     {
@@ -321,8 +321,8 @@ static int32_t checkForInitChar(void)
 
     if (hasChar == 1)
     {
-        uint8_t ch = 0u;
-        uint32_t receiveOK = uartReceiveData(&ch, 1u);
+        uint8_t ch = 0;
+        uint32_t receiveOK = uartReceiveData(&ch, 1);
 
         // Checking for Input 'A' in Uart-Buffer
         if (receiveOK == UART_ERR_OK && ch == (uint8_t)'A')

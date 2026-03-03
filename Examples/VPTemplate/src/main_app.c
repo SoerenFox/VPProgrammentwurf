@@ -67,19 +67,57 @@ static GasSensor gGasSensor2;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 static int32_t initializePeripherals();
-
-void task100ms()
-
-{
-	ledToggleLED(LED0);
-}
-
+void task10ms()
+		 {
+		 	ledToggleLED(LED0);
+		 }
+void task50ms()
+		 {
+			ledToggleLED(LED1);
+		 }
+void task250ms()
+		 {
+			ledToggleLED(LED2);
+		 }
 /**
  * @brief Main function of System
  */
 int main(void)
 {
-/*    while (1)
+	__HAL_RCC_AHB1_FORCE_RESET();
+	__HAL_RCC_AHB1_RELEASE_RESET();
+	// Initialize the HAL
+	 HAL_Init();
+
+	 // Initialize the System Clock
+	 SystemClock_Config();
+
+	 // Initialize Peripherals
+	 initializePeripherals();
+	 __enable_irq();
+
+	 // Initialize Scheduler
+	 schedInitialize(&gScheduler);
+
+	 gasSensorInitialize(&gGasSensor1, 204);
+	 gasSensorInitialize(&gGasSensor2, 204);
+	 gScheduler.pGetHALTick = HAL_GetTick;
+	 gScheduler.pTask_50ms = task10ms;
+	 gScheduler.pTask_50ms = task50ms;
+	 gScheduler.pTask_50ms = task250ms;
+
+
+	 while(1)
+	 {
+		 void task10ms();
+
+		 void task50ms();
+
+		 void task250ms();
+	 }
+
+
+	 while (1)
     {
     	int adcValue = adcReadChannel(ADC_INPUT0);
     	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
@@ -92,9 +130,9 @@ int main(void)
     	outputLogf("Gas Sensor 2: %d\n\r", gasValue2);
 
     	HAL_Delay(100);
-    }*/
+    }
 
-    /*uint32_t lastRuntime = 0;
+    uint32_t lastRuntime = 0;
 
     while (1)
     {
@@ -105,119 +143,8 @@ int main(void)
 
     		lastRuntime = HAL_GetTick();
     	}
-    }*/
+    }
 
-	    	uint32_t applicationState = STATE_INITIALIZATION;
-
-	         while(1)
-	         {
-	             switch(applicationState)
-	             {
-	                 /***************************************************************/
-	                 case STATE_INITIALIZATION:
-	                 {
-	                     // HW initialisieren
-	                     // Sensoren prüfen
-	                     // Kommunikationsschnittstellen starten
-	                     // Selbsttest durchführen
-
-						 __HAL_RCC_AHB1_FORCE_RESET();
-						 __HAL_RCC_AHB1_RELEASE_RESET();
-	                	 // Initialize the HAL
-	                	 HAL_Init();
-
-	                	 // Initialize the System Clock
-	                	 SystemClock_Config();
-
-	                	 // Initialize Peripherals
-	                	 initializePeripherals();
-
-	                	 // Initialize Scheduler
-	                	 schedInitialize(&gScheduler);
-
-	                	 gasSensorInitialize(&gGasSensor1, 204);
-	                	 gasSensorInitialize(&gGasSensor2, 204);
-	                	 gScheduler.pGetHALTick = HAL_GetTick;
-	                	 gScheduler.pTask_100ms = task100ms;
-
-	                	 applicationState = STATE_PRE_OPERATIONAL;
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 case STATE_PRE_OPERATIONAL:
-	                 {
-	                     // System bereit aber noch nicht aktiv
-	                     // Auf SWITCH_OPERATIONAL warten
-
-	                     if (buttonGetButtonStatus(BTN_SW1) == BUTTON_PRESSED)
-	                    	 while(1) {
-	                    		 if(buttonGetButtonStatus(BTN_SW1) == BUTTON_RELEASED) {
-	                    			 applicationState = STATE_OPERATIONAL;
-	                    		 }
-	                    	 }
-
-	                     // if (ERROR)
-	                     //     applicationState = STATE_FAILURE;
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 case STATE_OPERATIONAL:
-	                 {
-	                     // Sensorwerte zyklisch lesen
-	                     // Grenzwerte prüfen
-	                     // Monitoring aktiv
-
-	                	 if (buttonGetButtonStatus(BTN_SW1) == BUTTON_PRESSED)
-	                		 applicationState = STATE_PRE_OPERATIONAL;
-
-	                	 if (buttonGetButtonStatus(BTN_SW2) == BUTTON_PRESSED)
-	                	 	 applicationState = STATE_OPERATIONAL;
-
-	                     // if (SENSOR_DEFECT)
-	                     //     applicationState = STATE_FAILURE;
-
-	                     // if (TRIGGER_EMERGENCY)
-	                     //     applicationState = STATE_EMERGENCY;
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 case STATE_EMERGENCY:
-	                 {
-	                     // Notfall auslösen
-	                     // Alarm aktivieren
-	                     // System sichern
-
-	                     // if (ALARM_RESET)
-	                     //     applicationState = STATE_OPERATIONAL;
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 case STATE_FAILURE:
-	                 {
-	                     // Fehler anzeigen
-	                     // System in sicheren Zustand bringen
-	                     // ggf. Reset vorbereiten
-
-	                     break;
-	                 }
-
-	                 /***************************************************************/
-	                 default:
-	                 {
-	                     // Sicherheitsfallback
-	                     applicationState = STATE_INITIALIZATION;
-	                     break;
-	                 }
-	             }
-	         }
 }
 
 /***** PRIVATE FUNCTIONS *****************************************************/
