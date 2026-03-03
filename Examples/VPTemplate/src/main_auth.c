@@ -17,6 +17,7 @@
 /***** INCLUDES **************************************************************/
 #include "stm32g4xx_hal.h"
 #include "System.h"
+#include <stdbool.h>
 
 #include "HardwareConfig.h"
 
@@ -33,6 +34,7 @@
 #include "Scheduler.h"
 
 #include "GlobalObjects.h"
+#include "Auth/Authenticator.h"
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
@@ -67,7 +69,7 @@
 
 static uint32_t authenticatorState = AUTH_STATE_BOOTUP;
 static uint32_t prepareAppSubState = CHECK_FOR_A;
-static uint8_t gotValideInitChar = 0;
+static bool gotValideInitChar = false;
 static uint8_t  g_keyBuf[KEY_MAX_LEN + 1]; // +1 für \0
 static uint32_t g_keyLen = 0;
 
@@ -95,18 +97,13 @@ static void prepareApp_ResetKeyReception(void);
 /**
  * @brief Main function of System
  */
-int main(void)
-{
-	while(1)
-	{
+int main(void) {
+	while(1) {
 	// Pseudocode for states
 	// make function for each
 	// keine lokalen static valiables sondern globale
-		switch (authenticatorState)
-		{
+		switch (authenticatorState) {
 			case AUTH_STATE_BOOTUP:
-			{
-
 				__HAL_RCC_AHB1_FORCE_RESET();
 				__HAL_RCC_AHB1_RELEASE_RESET();
 				// Initialize the HAL
@@ -118,106 +115,79 @@ int main(void)
 				initializePeripherals();
 
 				authenticatorState = AUTH_STATE_PREPARE_APP;
-			}
-			break;
+				break;
 
 			case AUTH_STATE_PREPARE_APP:
-			{
 				int newState = prepareApp();
 				if(newState != AUTH_STATE_PREPARE_APP)
 				{
 					authenticatorState = newState;
 				}
-
-			}
-			break;
+				break;
 
 			case AUTH_STATE_START_APP:
-			{
-				// Go to main_app
-			}
-			break;
+				verify();
+				break;
 
 			case AUTH_STATE_FAILURE:
-			{
 				ledSetLED(LED4, LED_ON);
-			}
-			break;
-
-
+				break;
 		}
 	}
 }
-static int32_t prepareApp(void)
-{
-    switch (prepareAppSubState)
-    {
+
+static int32_t prepareApp(void) {
+    switch (prepareAppSubState) {
         // CHECK_FOR_A
     	// Waiting for character 'A' (15s) long
         case CHECK_FOR_A:
-        {
             uint32_t now = HAL_GetTick();
 
             // Startzeit einmalig setzen beim Eintritt
-            if (g_initStartTick == 0u)
-            {
+            if (g_initStartTick == 0u) {
                 g_initStartTick = now;
                 ledSetLED(LED1, LED_OFF); // D1 sicher aus
             }
 
             // Timeout 15s: wenn 'A' nicht kommt -> Failure
-            if ((now - g_initStartTick) >= TIMEOUT_INIT_15S_MS)
-            {
+            if ((now - g_initStartTick) >= TIMEOUT_INIT_15S_MS) {
                 ledSetLED(LED1, LED_OFF);
                 return AUTH_STATE_FAILURE;
             }
 
             // 'A' prüfen (nicht-blockierend)
-            if (checkForInitChar() == INIT_CHAR_YES)
-            {
-                gotValideInitChar = 1;
+            if (checkForInitChar() == INIT_CHAR_YES) {
+                gotValideInitChar = true;
 
                 // Wechsel zur Key-Receive-Phase
                 prepareApp_ResetKeyReception();
                 prepareAppSubState = WAIT_FOR_KEY;
             }
-
             break;
-        }
 
         // WAIT_FOR_KEY
         // Waiting for Key with LEDs after (10/30/45s) and Timeout
         case WAIT_FOR_KEY:
-        {
             int32_t keyStatus = checkForKey();
 
-            if (keyStatus == KEY_DONE)
-            {
+            if (keyStatus == KEY_DONE) {
                 // Key komplett empfangen -> weiter
                 ledSetLED(LED1, LED_OFF); // D1 aus bevor wir weitergehen
                 prepareAppSubState = DECRYPT_KEY;
             }
-            else if (keyStatus == KEY_TIMEOUT || keyStatus == KEY_TOO_LONG)
-            {
+            else if (keyStatus == KEY_TIMEOUT || keyStatus == KEY_TOO_LONG) {
                 ledSetLED(LED1, LED_OFF);
                 return AUTH_STATE_FAILURE;
-            }
-            else
-            {
+            } else {
                 // KEY_IN_PROGRESS -> bleib hier
             }
             break;
-        }
 
         case DECRYPT_KEY:
-        {
-            // Hier würdest du g_keyBuf / g_keyLen verwenden
-            // Beispiel:
-            // uint32_t decryptedKey = decryptKey(g_keyBuf, g_keyLen);
-
+        	copyAuthToRam();
+        	decryptAuth();
             ledSetLED(LED1, LED_OFF);
             return AUTH_STATE_START_APP;
-        }
 
         default:
             break;
@@ -226,14 +196,12 @@ static int32_t prepareApp(void)
     return AUTH_STATE_PREPARE_APP;
 }
 
-static void prepareApp_ResetKeyReception(void)
-{
+static void prepareApp_ResetKeyReception(void) {
     g_keyStartTick  = HAL_GetTick();
     g_lastFlashTick = g_keyStartTick;
     g_keyLen = 0u;
 
-    for (uint32_t i = 0; i < (KEY_MAX_LEN + 1u); i++)
-    {
+    for (uint32_t i = 0; i < (KEY_MAX_LEN + 1u); i++) {
         g_keyBuf[i] = 0u;
     }
 
@@ -244,30 +212,23 @@ static void prepareApp_ResetKeyReception(void)
     g_initStartTick = 0u;
 }
 
-static int32_t checkForKey(void)
-{
+static int32_t checkForKey(void) {
     uint32_t now = HAL_GetTick();
     uint32_t elapsed = now - g_keyStartTick;
 
     // 45s -> Failure
-    if (elapsed >= KEY_FAIL_45S_MS)
-    {
+    if (elapsed >= KEY_FAIL_45S_MS) {
         return KEY_TIMEOUT;
     }
 
     // LED-Stufen: 0..10s OFF, 10..30s ON, ab 30s BLINK
-    if (elapsed < KEY_STAGE1_10S_MS)
-    {
+    if (elapsed < KEY_STAGE1_10S_MS) {
         ledSetLED(LED1, LED_OFF);
     }
-    else if (elapsed < KEY_STAGE2_30S_MS)
-    {
+    else if (elapsed < KEY_STAGE2_30S_MS) {
         ledSetLED(LED1, LED_ON);
-    }
-    else
-    {
-    	if ((now - g_lastFlashTick) >= FLASH_PERIOD_MS)
-    	{
+    } else {
+    	if ((now - g_lastFlashTick) >= FLASH_PERIOD_MS) {
     		ledToggleLED(LED1);
     		g_lastFlashTick = now;
     	}
@@ -277,31 +238,22 @@ static int32_t checkForKey(void)
     int8_t hasChar = 0;
     uartHasData(&hasChar);
 
-    if (hasChar == 1)
-    {
+    if (hasChar == 1) {
         uint8_t byte = 0u;
         uint32_t receiveOK = uartReceiveData(&byte, 1u);
 
-        if (receiveOK == UART_ERR_OK)
-        {
-            if (byte == '\n')
-            {
+        if (receiveOK == UART_ERR_OK) {
+            if (byte == '\n') {
                 // Key fertig -> null-terminieren fürs Debug/Weiterverarbeiten
-                if (g_keyLen <= KEY_MAX_LEN)
-                {
+                if (g_keyLen <= KEY_MAX_LEN) {
                     g_keyBuf[g_keyLen] = '\0';
                     return KEY_DONE;
-                }
-                else
-                {
+                } else {
                     return KEY_TOO_LONG;
                 }
-            }
-            else
-            {
+            } else {
                 // normales Zeichen: in Buffer, aber max 8 Bytes
-                if (g_keyLen >= KEY_MAX_LEN)
-                {
+                if (g_keyLen >= KEY_MAX_LEN) {
                     return KEY_TOO_LONG;
                 }
 
@@ -310,27 +262,22 @@ static int32_t checkForKey(void)
             }
         }
     }
-
     return KEY_IN_PROGRESS;
 }
 
-static int32_t checkForInitChar(void)
-{
+static int32_t checkForInitChar(void) {
     int8_t hasChar = 0;
     uartHasData(&hasChar);
 
-    if (hasChar == 1)
-    {
+    if (hasChar == 1) {
         uint8_t ch = 0;
         uint32_t receiveOK = uartReceiveData(&ch, 1);
 
         // Checking for Input 'A' in Uart-Buffer
-        if (receiveOK == UART_ERR_OK && ch == (uint8_t)'A')
-        {
+        if (receiveOK == UART_ERR_OK && ch == (uint8_t)'A') {
         	// Checking for other Inputs after 'A'
         	uartHasData(&hasChar);
-        	if (hasChar == 1)
-        	{
+        	if (hasChar == 1) {
         		// Other Input after 'A' in Uart-Buffer
         		return INIT_CHAR_NO;
         	}
@@ -350,8 +297,7 @@ static int32_t checkForInitChar(void)
  *
  * @return Returns ERROR_OK if no error occurred
  */
-static int32_t initializePeripherals()
-{
+static int32_t initializePeripherals() {
     // Initialize UART used for Debug-Outputs
     uartInitialize(115200);
 
