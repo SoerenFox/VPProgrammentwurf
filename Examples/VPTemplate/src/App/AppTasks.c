@@ -25,21 +25,17 @@
 #include "DisplayModule.h"
 #include "ADCModule.h"
 #include "TimerModule.h"
+#include "GasSensor.h"
 #include "Util/Filter/Filter.h"
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
 #define DUAL_GAS_TOL_PERCENT      10
-
 #define EMA_SCALE   1000
-#define EMA_ALPHA   500   // entspricht 0.5
-
+#define EMA_ALPHA   500   // 0.5
 
 /***** PRIVATE MACROS ********************************************************/
-static EMAFilterData_t gEmaPot1;
-static EMAFilterData_t gEmaPot2;
 
-static uint8_t gFilterInitialized = 0;
 
 /***** PRIVATE TYPES *********************************************************/
 
@@ -48,23 +44,34 @@ static uint8_t gFilterInitialized = 0;
 
 
 /***** PRIVATE VARIABLES *****************************************************/
+static EMAFilterData_t gEmaPot1;
+static EMAFilterData_t gEmaPot2;
 
+static GasSensor gGasSensor1;
+static GasSensor gGasSensor2;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
+
+void appTasksInit(void)
+{
+    filterInitEMA(&gEmaPot1, EMA_SCALE, EMA_ALPHA, true);
+    filterInitEMA(&gEmaPot2, EMA_SCALE, EMA_ALPHA, true);
+
+    gasSensorInitialize(&gGasSensor1, 204);
+    gasSensorInitialize(&gGasSensor2, 204);
+}
 
 
 void taskApp10ms()
 {
-
-	filterInitEMA(&gEmaPot1, EMA_SCALE, EMA_ALPHA, true);
-	filterInitEMA(&gEmaPot2, EMA_SCALE, EMA_ALPHA, true);
-
 	int32_t pot1_raw = adcReadChannel(ADC_INPUT0);
 	int32_t pot2_raw = adcReadChannel(ADC_INPUT1);
+	int32_t gasValue1 = gasSensorSetSensorVoltage(&gGasSensor1, pot1_raw);
+	int32_t gasValue2 = gasSensorSetSensorVoltage(&gGasSensor2, pot2_raw);
 
-	int32_t pot1_filtered = filterEMA(&gEmaPot1, pot1_raw);
+	int32_t pot1_filtered = filterEMA(&gEmaPot1, gasValue1);
 	outputLogf("Gas Sensor 1: %d\n\r", pot1_filtered);
-	int32_t pot2_filtered = filterEMA(&gEmaPot2, pot2_raw);
+	int32_t pot2_filtered = filterEMA(&gEmaPot2, gasValue2);
 	outputLogf("Gas Sensor 2: %d\n\r", pot2_filtered);
 
 	ledToggleLED(LED1);

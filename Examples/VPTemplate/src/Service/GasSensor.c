@@ -42,4 +42,4 @@ int32_t gasSensorGetSensorVoltage(GasSensor* pSensor) {
 
 	return pSensor->sensorVoltage;
 }
-// <|>
+
