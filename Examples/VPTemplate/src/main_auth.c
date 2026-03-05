@@ -18,6 +18,8 @@
 #include "stm32g4xx_hal.h"
 #include "System.h"
 #include <stdbool.h>
+#include <string.h>
+
 
 #include "HardwareConfig.h"
 
@@ -55,7 +57,7 @@
 
 #define TIMEOUT_INIT_15S_MS     15000	// ms
 
-#define KEY_MAX_LEN             8
+#define MAX_KEY_LEN             8
 #define KEY_STAGE1_10S_MS       10000	// ms
 #define KEY_STAGE2_30S_MS       30000	// ms
 #define KEY_FAIL_45S_MS         45000	// ms
@@ -65,12 +67,11 @@
 #define KEY_IN_PROGRESS         0
 #define KEY_DONE                1
 #define KEY_TIMEOUT             -1
-#define KEY_TOO_LONG            -2
 
 static uint32_t authenticatorState = AUTH_STATE_BOOTUP;
 static uint32_t prepareAppSubState = CHECK_FOR_A;
 static bool gotValideInitChar = false;
-static uint8_t  g_keyBuf[KEY_MAX_LEN + 1]; // +1 für \0
+static uint8_t  g_keyBuf[MAX_KEY_LEN + 1]; // +1 für \0
 static uint32_t g_keyLen = 0;
 
 static uint32_t g_initStartTick = 0;
@@ -94,6 +95,9 @@ static int32_t checkForInitChar();
 static int32_t checkForKey(void);
 static void prepareApp_ResetKeyReception(void);
 
+#define AUTH_KEY "VP2026"
+char* key = AUTH_KEY;
+
 /**
  * @brief Main function of System
  */
@@ -114,6 +118,7 @@ int main(void) {
 				// Initialize Peripherals
 				initializePeripherals();
 
+				ledSetLED(LED0, LED_ON);
 				authenticatorState = AUTH_STATE_PREPARE_APP;
 				break;
 
@@ -126,6 +131,7 @@ int main(void) {
 				break;
 
 			case AUTH_STATE_START_APP:
+				ledSetLED(LED0, LED_OFF);
 				verify();
 				break;
 
@@ -175,7 +181,7 @@ static int32_t prepareApp(void) {
                 ledSetLED(LED1, LED_OFF); // D1 aus bevor wir weitergehen
                 prepareAppSubState = DECRYPT_KEY;
             }
-            else if (keyStatus == KEY_TIMEOUT || keyStatus == KEY_TOO_LONG) {
+            else if (keyStatus == KEY_TIMEOUT) {
                 ledSetLED(LED1, LED_OFF);
                 return AUTH_STATE_FAILURE;
             } else {
@@ -201,7 +207,7 @@ static void prepareApp_ResetKeyReception(void) {
     g_lastFlashTick = g_keyStartTick;
     g_keyLen = 0u;
 
-    for (uint32_t i = 0; i < (KEY_MAX_LEN + 1u); i++) {
+    for (uint32_t i = 0; i < (MAX_KEY_LEN + 1u); i++) {
         g_keyBuf[i] = 0u;
     }
 
@@ -234,42 +240,38 @@ static int32_t checkForKey(void) {
     	}
     }
 
-    // UART: nicht-blockierend 1 Byte lesen wenn da
-    int8_t hasChar = 0;
-    uartHasData(&hasChar);
+    static char buffer[MAX_KEY_LEN] = "";
+	int len = strlen(buffer);
 
-    if (hasChar == 1) {
-        uint8_t byte = 0u;
-        uint32_t receiveOK = uartReceiveData(&byte, 1u);
+	int8_t hasChar = 0;
+	uartHasData(&hasChar);
 
-        if (receiveOK == UART_ERR_OK) {
-            if (byte == '\n') {
-                // Key fertig -> null-terminieren fürs Debug/Weiterverarbeiten
-                if (g_keyLen <= KEY_MAX_LEN) {
-                    g_keyBuf[g_keyLen] = '\0';
-                    return KEY_DONE;
-                } else {
-                    return KEY_TOO_LONG;
-                }
-            } else {
-                // normales Zeichen: in Buffer, aber max 8 Bytes
-                if (g_keyLen >= KEY_MAX_LEN) {
-                    return KEY_TOO_LONG;
-                }
+	if (hasChar) {
+		uint8_t ch = 0;
+		uint32_t receiveOK = uartReceiveData(&ch, 1);
 
-                g_keyBuf[g_keyLen] = byte;
-                g_keyLen++;
-            }
-        }
-    }
-    return KEY_IN_PROGRESS;
+		if (receiveOK == UART_ERR_OK) {
+			if (ch == '\n' && strcmp(buffer, key) == 0) {
+				return KEY_DONE;
+			}
+			else if (ch == '\r') {
+				return KEY_IN_PROGRESS;
+			}
+			else if (len < MAX_KEY_LEN) {
+				 buffer[len] = ch;
+				 buffer[len + 1] = '\0';
+			}
+		}
+
+	}
+	return KEY_IN_PROGRESS;
 }
 
 static int32_t checkForInitChar(void) {
     int8_t hasChar = 0;
     uartHasData(&hasChar);
 
-    if (hasChar == 1) {
+    if (hasChar) {
         uint8_t ch = 0;
         uint32_t receiveOK = uartReceiveData(&ch, 1);
 
@@ -289,7 +291,7 @@ static int32_t checkForInitChar(void) {
     return INIT_CHAR_NO;
 }
 
-/***** PRIVATE FUNCTIONS *****************************************************/
+/***** PRIVATE FUNCTIONS ******************************************A***********/
 
 /**
  * @brief Initializes the used peripherals like GPIO,
