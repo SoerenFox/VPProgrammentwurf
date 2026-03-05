@@ -2,6 +2,12 @@
 
 #include "stm32g4xx.h"
 
+void authInitialize(Auth* pAuth) {
+	pAuth->authenticatorState = AUTH_STATE_BOOTUP;
+	pAuth->prepareAppSubState = CHECK_FOR_A;
+	pAuth->gotValideInitChar = false;
+}
+
 /**
  * @brief Copies .auth section from Flash to RAM.
  */
@@ -16,8 +22,7 @@ void copyAuthToRam(void) {
 /**
  * @brief Runs same XOR encrypting logic of provided python code again.
  */
-void decryptAuthInRam(void)
-{
+void decryptAuth(void) {
     uint8_t* ptr = &_sauth;
     uint32_t length = (uint32_t)(&_eauth - &_sauth);
 
