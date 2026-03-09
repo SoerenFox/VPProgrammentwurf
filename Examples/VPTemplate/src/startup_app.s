@@ -91,7 +91,6 @@ MAGIC_STACK_VALUE:
 .loopFillStack:
    cmp r0, r1
    bne .fillStack    
-   bcc .fillStack    
 
     /* Initialize the Stack-Pointer */
     /* Load address of initial_stack_pointer into R0 for. Symbol defined in Linker Script */
