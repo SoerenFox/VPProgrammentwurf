@@ -33,16 +33,15 @@
 /* ===== Events ===== */
 #define APP_EVT_INIT_DONE                1
 #define APP_EVT_ERROR                    2
-#define APP_EVT_SWITCH_OPERATIONAL       3
-#define APP_EVT_SWITCH_PRE_OPERATIONAL   4
-#define APP_EVT_SENSOR_DEFECT            5
-#define APP_EVT_TRIGGER_EMERGENCY        6
-#define APP_EVT_ALARM_RESET              7
+#define APP_EVT_SWITCH_STATE      		 3
+#define APP_EVT_SENSOR_DEFECT            4
+#define APP_EVT_TRIGGER_EMERGENCY        5
+#define APP_EVT_ALARM_RESET              6
 
 /* ===== API ===== */
-int32_t applicationInit(void);
-int32_t applicationRunCyclic(void);
+int32_t applicationInit();
+int32_t applicationRunCyclic();
 int32_t applicationSendEvent(int32_t eventID);
-int32_t applicationGetCurrentState(void);
+int32_t applicationGetCurrentState();
 
 #endif

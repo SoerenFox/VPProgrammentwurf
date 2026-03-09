@@ -44,6 +44,8 @@ static int32_t onStateOperational(State_t* pState, int32_t eventID);
 static int32_t onStateEmergency(State_t* pState, int32_t eventID);
 static int32_t onEntryFailure(State_t* pState, int32_t eventID);
 
+
+
 /***** PRIVATE VARIABLES *****************************************************/
 
 /**
@@ -77,10 +79,10 @@ static StateTableEntry_t gStateTableEntries[] =
     { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_ERROR,                  0, 0, 0 },
 
     /* PreOperational */
-    { APP_STATE_PREOPERATIONAL, APP_STATE_OPERATIONAL,    APP_EVT_SWITCH_OPERATIONAL,     0, 0, 0 },
+    { APP_STATE_PREOPERATIONAL, APP_STATE_OPERATIONAL,    APP_EVT_SWITCH_STATE,     0, 0, 0 },
 
     /* Operational */
-    { APP_STATE_OPERATIONAL,    APP_STATE_PREOPERATIONAL, APP_EVT_SWITCH_PRE_OPERATIONAL, 0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_PREOPERATIONAL, APP_EVT_SWITCH_STATE, 0, 0, 0 },
     { APP_STATE_OPERATIONAL,    APP_STATE_FAILURE,        APP_EVT_SENSOR_DEFECT,          0, 0, 0 },
     { APP_STATE_OPERATIONAL,    APP_STATE_EMERGENCY,      APP_EVT_TRIGGER_EMERGENCY,      0, 0, 0 },
 

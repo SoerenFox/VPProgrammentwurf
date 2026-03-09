@@ -22,4 +22,7 @@ int32_t gasSensorSetSensorVoltage(GasSensor* pSensor, uint32_t sensorVoltage);
 int32_t gasSensorGetSensorValue(GasSensor* pSensor);
 int32_t gasSensorGetSensorVoltage(GasSensor* pSensor);
 
+uint8_t checkForValideADC(int32_t value1, int32_t value2);
+uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent);
+
 #endif

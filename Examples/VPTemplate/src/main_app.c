@@ -54,9 +54,6 @@ const char signature[] __attribute__ ((section (".signature"))) = "UMMS";
 #define INIT_CHAR_NO	0
 #define INIT_CHAR_YES	1
 
-#define EMA_SCALE   1000
-#define EMA_ALPHA   500   // entspricht 0.5
-
 
 /***** PRIVATE TYPES *********************************************************/
 

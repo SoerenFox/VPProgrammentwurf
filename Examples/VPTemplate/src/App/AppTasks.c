@@ -27,12 +27,15 @@
 #include "TimerModule.h"
 #include "GasSensor.h"
 #include "Util/Filter/Filter.h"
+#include "Application.h"
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
 #define DUAL_GAS_TOL_PERCENT      10
 #define EMA_SCALE   1000
 #define EMA_ALPHA   500   // 0.5
+
+#define PERCENTTOLERANCE 30 // Tolerance for filtered gasSensorsValues
 
 /***** PRIVATE MACROS ********************************************************/
 
@@ -59,6 +62,8 @@ void appTasksInit(void)
 
     gasSensorInitialize(&gGasSensor1, 204);
     gasSensorInitialize(&gGasSensor2, 204);
+
+    applicationInit();
 }
 
 
@@ -66,13 +71,26 @@ void taskApp10ms()
 {
 	int32_t pot1_raw = adcReadChannel(ADC_INPUT0);
 	int32_t pot2_raw = adcReadChannel(ADC_INPUT1);
-	int32_t gasValue1 = gasSensorSetSensorVoltage(&gGasSensor1, pot1_raw);
-	int32_t gasValue2 = gasSensorSetSensorVoltage(&gGasSensor2, pot2_raw);
+
+	gasSensorSetSensorVoltage(&gGasSensor1, pot1_raw);
+	gasSensorSetSensorVoltage(&gGasSensor2, pot2_raw);
+
+	int32_t gasValue1 = gasSensorGetSensorValue(&gGasSensor1);
+	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor2);
+
+	if (checkForValideADC(gasValue1, gasValue2))
+	{
+		applicationSendEvent(APP_EVT_ERROR);
+		return;
+	}
 
 	int32_t pot1_filtered = filterEMA(&gEmaPot1, gasValue1);
-	outputLogf("Gas Sensor 1: %d\n\r", pot1_filtered);
 	int32_t pot2_filtered = filterEMA(&gEmaPot2, gasValue2);
-	outputLogf("Gas Sensor 2: %d\n\r", pot2_filtered);
+
+	if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE))
+	{
+		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+	}
 
 	ledToggleLED(LED1);
 
@@ -80,6 +98,8 @@ void taskApp10ms()
 
 void taskApp50ms()
 {
+	applicationRunCyclic();
+
 	ledToggleLED(LED2);
 }
 

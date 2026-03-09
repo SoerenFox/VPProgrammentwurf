@@ -4,9 +4,10 @@
 #define MIN_SENSOR_VALUE 200
 #define MAX_SENSOR_VALUE 10e3
 
-// in µV
-#define MIN_SENSOR_VOLTAGE 2.5e6
-#define MAX_SENSOR_VOLTAGE 5e6
+#define MIN_SENSOR_VOLTAGE 500000	// in µV (0.5V)
+#define MAX_SENSOR_VOLTAGE 2500000	// in µV (2.5V)
+
+#define GETTOINT 100				// Factor to get dec to int
 
 int32_t gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
@@ -41,5 +42,35 @@ int32_t gasSensorGetSensorVoltage(GasSensor* pSensor) {
 	if (pSensor->sensorVoltage < MIN_SENSOR_VOLTAGE|| pSensor->sensorVoltage > MAX_SENSOR_VOLTAGE) return SENSOR_VOLTAGE_INVALID;
 
 	return pSensor->sensorVoltage;
+}
+
+uint8_t checkForValideADC(int32_t value1, int32_t value2)
+{
+    if (value1 < 0 || value2 < 0)
+    {
+        return 1;   // invalid ADC value
+    }
+
+    return 0;       // values valid
+}
+
+uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
+{
+    if (filteredValue1 < filteredValue2)
+    {
+    	uint32_t diff = filteredValue2 - filteredValue1;
+    	if ((diff * GETTOINT/filteredValue2) <= percent) return 0;
+
+        return 1;   // invalid ADC value
+
+    } else if (filteredValue2 < filteredValue1)
+    {
+    	uint32_t diff = filteredValue1 - filteredValue2;
+    	if ((diff * GETTOINT/filteredValue1) <= percent) return 0;
+
+    	return 1;   // invalid ADC value
+    }
+
+    return 0;       // values valid
 }
 
