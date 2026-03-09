@@ -29,7 +29,7 @@
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
-
+#define DEBOUNCE_TIME_MS 50
 
 /***** PRIVATE MACROS ********************************************************/
 
@@ -200,6 +200,26 @@ static int32_t onEntryFailure(State_t* pState, int32_t eventID)
     /* TODO: enter safe state, latch fault, log
        No transitions out of FAILURE in your table.
     */
+
+    return 0;
+}
+
+uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState, uint32_t currentTick)
+{
+    if (newRawState != btn->rawState)
+    {
+        btn->rawState = newRawState;
+        btn->lastChangeTick = currentTick;
+    }
+
+    if ((currentTick - btn->lastChangeTick) >= DEBOUNCE_TIME_MS)
+    {
+        if (btn->stableState != btn->rawState)
+        {
+            btn->stableState = btn->rawState;
+            return 1; // state changed
+        }
+    }
 
     return 0;
 }

@@ -29,6 +29,7 @@
 #include "Util/Filter/Filter.h"
 #include "Application.h"
 
+
 /***** PRIVATE CONSTANTS *****************************************************/
 
 #define DUAL_GAS_TOL_PERCENT      10
@@ -52,6 +53,10 @@ static EMAFilterData_t gEmaPot2;
 
 static GasSensor gGasSensor1;
 static GasSensor gGasSensor2;
+
+DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
+DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
+
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
@@ -90,6 +95,22 @@ void taskApp10ms()
 	if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE))
 	{
 		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+	}
+
+	if (debounceButton(&gButtonSW1, buttonGetButtonStatus(BTN_SW1), HAL_GetTick()))
+	{
+		if (gButtonSW1.stableState)
+		{
+			applicationSendEvent(APP_EVT_SWITCH_STATE);
+		}
+	}
+
+	if (debounceButton(&gButtonB1, buttonGetButtonStatus(BTN_B1), HAL_GetTick()))
+	{
+		if (gButtonB1.stableState)
+		{
+			applicationSendEvent(APP_EVT_ALARM_RESET);
+		}
 	}
 
 	ledToggleLED(LED1);

@@ -19,7 +19,12 @@
 #include <stdint.h>
 
 /***** CONSTANTS *************************************************************/
-
+typedef struct _DebounceButton
+{
+    uint8_t rawState;
+    uint8_t stableState;
+    uint32_t lastChangeTick;
+} DebounceButton;
 
 /***** MACROS ****************************************************************/
 
@@ -43,5 +48,6 @@ int32_t applicationInit();
 int32_t applicationRunCyclic();
 int32_t applicationSendEvent(int32_t eventID);
 int32_t applicationGetCurrentState();
+uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState, uint32_t currentTick);
 
 #endif
