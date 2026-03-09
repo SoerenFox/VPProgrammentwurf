@@ -40,7 +40,7 @@ typedef struct _EMAFilterData
     int32_t alpha;                              //!< Alpha value (filter constant) as scaled value
     int32_t previousValue;                      //!< Previous value of the filter output
     int32_t scalingFactor;                       //!< Used scaling factor
-} EMAFilterData_t;
+} EMAFilterData;
 
 
 /***** PROTOTYPES ************************************************************/
@@ -56,7 +56,7 @@ typedef struct _EMAFilterData
  *
  * @return Return FILTER_ERR_OK is no error occured
  */
-int32_t filterInitEMA(EMAFilterData_t* pEMA, int32_t scalingFactor, int32_t alpha, bool resetFilter);
+int32_t filterInitEMA(EMAFilterData* pEMA, int32_t scalingFactor, int32_t alpha, bool resetFilter);
 
 
 /**
@@ -66,7 +66,7 @@ int32_t filterInitEMA(EMAFilterData_t* pEMA, int32_t scalingFactor, int32_t alph
  *
  * @return Return FILTER_ERR_OK is no error occured
  */
-int32_t filterResetEMA(EMAFilterData_t* pEMA);
+int32_t filterResetEMA(EMAFilterData* pEMA);
 
 /**
  * @brief Performs the EMA filtering on the provided sensor value
@@ -76,6 +76,6 @@ int32_t filterResetEMA(EMAFilterData_t* pEMA);
  *
  * @return The filtered sensor value
  */
-int32_t filterEMA(EMAFilterData_t* pEMA, int32_t sensorValue);
+int32_t filterEMA(EMAFilterData* pEMA, int32_t sensorValue);
 
 #endif

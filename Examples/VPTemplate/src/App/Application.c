@@ -18,24 +18,26 @@
 #include <string.h>
 
 #include "Application.h"
-#include "Util/Global.h"
-#include "Util/Log/printf.h"
 
-#include "UARTModule.h"
-#include "ButtonModule.h"
-#include "LEDModule.h"
-
-#include "Util/StateTable/StateTable.h"
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
 #define DEBOUNCE_TIME_MS 50
+#define EMA_SCALE   1000
+#define EMA_ALPHA   500   // 0.5
 
 /***** PRIVATE MACROS ********************************************************/
 
 
 /***** PRIVATE TYPES *********************************************************/
+EMAFilterData gEmaPot1;
+EMAFilterData gEmaPot2;
 
+GasSensor gGasSensor1;
+GasSensor gGasSensor2;
+
+DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
+DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 
 /***** PRIVATE FUNCTIONS *****************************************************/
 static int32_t onEntryInitialization(State_t* pState, int32_t eventID);
@@ -125,25 +127,64 @@ int32_t applicationGetCurrentState(void)
     return gStateTable.currentStateID;
 }
 
+/**
+ * @brief Initializes the used peripherals like GPIO,
+ * ADC, DMA and Timer Interrupts
+ *
+ * @return Returns ERROR_OK if no error occurred
+ */
+static int32_t initializePeripherals()
+{
+    // Initialize UART used for Debug-Outputs
+    uartInitialize(115200);
+
+    // Initialize GPIOs for LED and 7-Segment output
+	ledInitialize();
+    displayInitialize();
+
+    // Initialize GPIOs for Buttons
+    buttonInitialize();
+
+    // Initialize Timer, DMA and ADC for sensor measurements
+    timerInitialize();
+    adcInitialize();
+
+    return ERROR_OK;
+}
+
 
 /***** PRIVATE FUNCTIONS *****************************************************/
 static int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 {
-    (void)pState; (void)eventID;
 
-    /* TODO: init start (one-time):
-       - init modules
-       - start self-tests
-       - start timers
-       When init is COMPLETE, trigger event:
-       applicationSendEvent(APP_EVT_INIT_DONE);
 
-       If init FAILS:
-       applicationSendEvent(APP_EVT_ERROR);
-    */
+		// Initialize the System Clock
+		SystemClock_Config();
+
+		// Initialize Peripherals
+		initializePeripherals();
+		__enable_irq();
+
+        filterInitEMA(&gEmaPot1, EMA_SCALE, EMA_ALPHA, true);
+        filterInitEMA(&gEmaPot2, EMA_SCALE, EMA_ALPHA, true);
+
+        gasSensorInitialize(&gGasSensor1, 204);
+        gasSensorInitialize(&gGasSensor2, 204);
+
+        if (!checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
+        {
+            applicationSendEvent(APP_EVT_INIT_DONE);
+        }
+        else
+        {
+            applicationSendEvent(APP_EVT_ERROR);
+        }
+
+        return 0;
 
     return 0;
 }
+
 
 /* Called cyclic while in PREOPERATIONAL (no onEntry used) */
 static int32_t onStatePreOperational(State_t* pState, int32_t eventID)

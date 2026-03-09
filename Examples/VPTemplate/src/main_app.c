@@ -20,39 +20,18 @@
 #include "System.h"
 
 #include "HardwareConfig.h"
-
-#include "Util/Global.h"
-#include "Util/Log/printf.h"
-#include "Util/Log/LogOutput.h"
-#include "Util/Filter/Filter.h"
-
-#include "UARTModule.h"
-#include "ButtonModule.h"
-#include "LEDModule.h"
-#include "DisplayModule.h"
-#include "ADCModule.h"
 #include "TimerModule.h"
 #include "Scheduler.h"
 
-#include "GlobalObjects.h"
-
-#include "GasSensor.h"
-
 #include "AppTasks.h"
+#include "Application.h"
+
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
 const char signature[] __attribute__ ((section (".signature"))) = "UMMS";
 
 /***** PRIVATE MACROS ********************************************************/
-#define STATE_INITIALIZATION     0
-#define STATE_PRE_OPERATIONAL    1
-#define STATE_OPERATIONAL        2
-#define STATE_EMERGENCY          3
-#define STATE_FAILURE            4
-
-#define INIT_CHAR_NO	0
-#define INIT_CHAR_YES	1
 
 
 /***** PRIVATE TYPES *********************************************************/
@@ -62,11 +41,10 @@ const char signature[] __attribute__ ((section (".signature"))) = "UMMS";
 
 
 /***** PRIVATE VARIABLES *****************************************************/
-static Scheduler gScheduler;            // Global Scheduler instance
+Scheduler gScheduler;            // Global Scheduler instance
 
 
 /***** PUBLIC FUNCTIONS ******************************************************/
-static int32_t initializePeripherals();
 
 /**
  * @brief Main function of System
@@ -75,20 +53,14 @@ int main(void)
 {
 	__HAL_RCC_AHB1_FORCE_RESET();
 	__HAL_RCC_AHB1_RELEASE_RESET();
+
 	// Initialize the HAL
 	 HAL_Init();
 
-	 // Initialize the System Clock
-	 SystemClock_Config();
-
-	 // Initialize Peripherals
-	 initializePeripherals();
-	 __enable_irq();
+	 applicationInit();
 
 	 // Initialize Scheduler
 	 schedInitialize(&gScheduler);
-
-	 appTasksInit();
 	 gScheduler.pGetHALTick = HAL_GetTick;
 	 gScheduler.pTask_10ms = taskApp10ms;
 	 gScheduler.pTask_50ms = taskApp50ms;
@@ -116,44 +88,20 @@ int main(void)
     //	HAL_Delay(100);
     //
 
-    uint32_t lastRuntime = 0;
+    //uint32_t lastRuntime = 0;
 
-    while (1)
-    {
-    	uint32_t currentTime = HAL_GetTick();
-
-    	if ((currentTime - lastRuntime) > 100) {
-    		ledToggleLED(LED0);
-
-    		lastRuntime = HAL_GetTick();
-    	}
-    }
-
+// while (1)
+// {
+// 	uint32_t currentTime = HAL_GetTick();
+//
+// 	if ((currentTime - lastRuntime) > 100) {
+// 		ledToggleLED(LED0);
+//
+// 		lastRuntime = HAL_GetTick();
+// 	}
+// }
+//
 }
 
 /***** PRIVATE FUNCTIONS *****************************************************/
 
-/**
- * @brief Initializes the used peripherals like GPIO,
- * ADC, DMA and Timer Interrupts
- *
- * @return Returns ERROR_OK if no error occurred
- */
-static int32_t initializePeripherals()
-{
-    // Initialize UART used for Debug-Outputs
-    uartInitialize(115200);
-
-    // Initialize GPIOs for LED and 7-Segment output
-	ledInitialize();
-    displayInitialize();
-
-    // Initialize GPIOs for Buttons
-    buttonInitialize();
-
-    // Initialize Timer, DMA and ADC for sensor measurements
-    timerInitialize();
-    adcInitialize();
-
-    return ERROR_OK;
-}

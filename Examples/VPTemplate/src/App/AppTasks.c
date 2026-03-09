@@ -15,26 +15,14 @@
 
 
 /***** INCLUDES **************************************************************/
-#include "Util/Log/printf.h"
-#include "Util/Log/LogOutput.h"
-#include "Scheduler.h"
-#include "AppTasks.h"
-#include "UARTModule.h"
-#include "ButtonModule.h"
-#include "LEDModule.h"
-#include "DisplayModule.h"
-#include "ADCModule.h"
-#include "TimerModule.h"
-#include "GasSensor.h"
-#include "Util/Filter/Filter.h"
 #include "Application.h"
+#include "AppTasks.h"
+
 
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
 #define DUAL_GAS_TOL_PERCENT      10
-#define EMA_SCALE   1000
-#define EMA_ALPHA   500   // 0.5
 
 #define PERCENTTOLERANCE 30 // Tolerance for filtered gasSensorsValues
 
@@ -48,40 +36,15 @@
 
 
 /***** PRIVATE VARIABLES *****************************************************/
-static EMAFilterData_t gEmaPot1;
-static EMAFilterData_t gEmaPot2;
-
-static GasSensor gGasSensor1;
-static GasSensor gGasSensor2;
-
-DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
-DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
-void appTasksInit(void)
-{
-    filterInitEMA(&gEmaPot1, EMA_SCALE, EMA_ALPHA, true);
-    filterInitEMA(&gEmaPot2, EMA_SCALE, EMA_ALPHA, true);
-
-    gasSensorInitialize(&gGasSensor1, 204);
-    gasSensorInitialize(&gGasSensor2, 204);
-
-    applicationInit();
-}
-
 
 void taskApp10ms()
 {
-	int32_t pot1_raw = adcReadChannel(ADC_INPUT0);
-	int32_t pot2_raw = adcReadChannel(ADC_INPUT1);
-
-	gasSensorSetSensorVoltage(&gGasSensor1, pot1_raw);
-	gasSensorSetSensorVoltage(&gGasSensor2, pot2_raw);
-
-	int32_t gasValue1 = gasSensorGetSensorValue(&gGasSensor1);
-	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor2);
+	int32_t gasValue1 = gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0);
+	int32_t gasValue2 = gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1);
 
 	if (checkForValideADC(gasValue1, gasValue2))
 	{
@@ -131,7 +94,3 @@ void taskApp250ms()
 
 
 /***** PRIVATE FUNCTIONS *****************************************************/
-
-
-
-

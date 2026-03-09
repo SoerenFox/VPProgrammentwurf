@@ -29,7 +29,6 @@
 
 
 /***** PROTOTYPES ************************************************************/
-void appTasksInit();
 void taskApp10ms();
 void taskApp50ms();
 void taskApp250ms();

@@ -74,3 +74,12 @@ uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint
     return 0;       // values valid
 }
 
+int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
+{
+    int32_t raw = adcReadChannel(adcChannel);
+
+    gasSensorSetSensorVoltage(pSensor, raw);
+
+    return gasSensorGetSensorValue(pSensor);
+}
+

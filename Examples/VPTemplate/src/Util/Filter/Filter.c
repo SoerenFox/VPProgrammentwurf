@@ -33,7 +33,7 @@
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
-int32_t filterInitEMA(EMAFilterData_t* pEMA, int32_t scalingFactor, int32_t alpha, bool resetFilter)
+int32_t filterInitEMA(EMAFilterData* pEMA, int32_t scalingFactor, int32_t alpha, bool resetFilter)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
     if (scalingFactor <= 0) return FILTER_ERR_INVALID_PARAM;
@@ -46,7 +46,7 @@ int32_t filterInitEMA(EMAFilterData_t* pEMA, int32_t scalingFactor, int32_t alph
     return FILTER_ERR_OK;
 }
 
-int32_t filterResetEMA(EMAFilterData_t* pEMA)
+int32_t filterResetEMA(EMAFilterData* pEMA)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
     pEMA->firstValueAvailable = false;
@@ -54,7 +54,7 @@ int32_t filterResetEMA(EMAFilterData_t* pEMA)
     return FILTER_ERR_OK;
 }
 
-int32_t filterEMA(EMAFilterData_t* pEMA, int32_t x)
+int32_t filterEMA(EMAFilterData* pEMA, int32_t x)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
     if (pEMA->scalingFactor <= 0) return FILTER_ERR_INVALID_PARAM;

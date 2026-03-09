@@ -17,6 +17,30 @@
 
 /***** INCLUDES **************************************************************/
 #include <stdint.h>
+#include "stm32g4xx_hal.h"
+
+#include "HardwareConfig.h"
+#include "System.h"
+#include "stm32g4xx.h"
+#include "Util/StateTable/StateTable.h"
+#include "HardwareConfig.h"
+
+#include "Util/Global.h"
+#include "Util/Log/printf.h"
+#include "Util/Log/LogOutput.h"
+#include "Util/Filter/Filter.h"
+
+#include "UARTModule.h"
+#include "ButtonModule.h"
+#include "LEDModule.h"
+#include "DisplayModule.h"
+#include "ADCModule.h"
+#include "TimerModule.h"
+#include "Scheduler.h"
+#include "GasSensor.h"
+
+#include "GlobalObjects.h"
+
 
 /***** CONSTANTS *************************************************************/
 typedef struct _DebounceButton
@@ -25,6 +49,15 @@ typedef struct _DebounceButton
     uint8_t stableState;
     uint32_t lastChangeTick;
 } DebounceButton;
+
+extern EMAFilterData gEmaPot1;
+extern EMAFilterData gEmaPot2;
+
+extern GasSensor gGasSensor1;
+extern GasSensor gGasSensor2;
+
+extern DebounceButton gButtonSW1;
+extern DebounceButton gButtonB1;
 
 /***** MACROS ****************************************************************/
 
