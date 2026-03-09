@@ -66,7 +66,7 @@ int main(void)
 	 gScheduler.pTask_50ms = taskApp50ms;
 	 gScheduler.pTask_250ms = taskApp250ms;
 
-
+	 applicationRunCyclic();
 	 while(1)
 	 {
 		 schedCycle(&gScheduler);
