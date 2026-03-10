@@ -13,10 +13,9 @@ ser = serial.Serial(
 packet_counter = 0
 
 def calculate_checksum(data):
-    """Berechnet eine einfache Checksumme (XOR aller Bytes)."""
-    checksum = 0
-    for byte in data:
-        checksum ^= byte
+    """Checksum = Zweierkomplement des niederwertigsten Bytes der Summe aller Datenbytes."""
+    lsb = sum(data) & 0xFF
+    checksum = ((lsb ^ 0xFF) + 0x01) & 0xFF
     return checksum
 
 def send_packet(measurement_value):
