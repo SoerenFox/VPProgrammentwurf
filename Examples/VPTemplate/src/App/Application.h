@@ -23,7 +23,6 @@
 #include "System.h"
 #include "stm32g4xx.h"
 #include "Util/StateTable/StateTable.h"
-#include "HardwareConfig.h"
 
 #include "Util/Global.h"
 #include "Util/Log/printf.h"
@@ -38,6 +37,7 @@
 #include "TimerModule.h"
 #include "Scheduler.h"
 #include "GasSensor.h"
+#include "WaterSensor.h"
 
 #include "GlobalObjects.h"
 
@@ -59,6 +59,8 @@ extern GasSensor gGasSensor2;
 extern DebounceButton gButtonSW1;
 extern DebounceButton gButtonB1;
 
+extern WaterSensor gWaterSensor;
+
 /***** MACROS ****************************************************************/
 
 /* ===== States ===== */
@@ -68,19 +70,47 @@ extern DebounceButton gButtonB1;
 #define APP_STATE_EMERGENCY          4
 #define APP_STATE_FAILURE            5
 
+// typedef enum
+// {
+// 	APP_STATE_INITIALIZATION,
+// 	APP_STATE_PREOPERATIONAL,
+// 	APP_STATE_OPERATIONAL,
+// 	APP_STATE_EMERGENCY,
+// 	APP_STATE_FAILURE
+// } AppState;
+
 /* ===== Events ===== */
-#define APP_EVT_INIT_DONE                1
-#define APP_EVT_ERROR                    2
-#define APP_EVT_SWITCH_STATE      		 3
-#define APP_EVT_SENSOR_DEFECT            4
-#define APP_EVT_TRIGGER_EMERGENCY        5
-#define APP_EVT_ALARM_RESET              6
+#define APP_EVT_INIT_DONE               1
+#define APP_EVT_ERROR                   2
+#define APP_EVT_SWITCH_STATE      		3
+#define APP_EVT_SENSOR_DEFECT           4
+#define APP_EVT_TRIGGER_EMERGENCY       5
+#define APP_EVT_ALARM_RESET             6
+#define APP_EVT_STACK_CORRUPTION		7
+
+// typedef enum
+// {
+// 	APP_EVT_INIT_DONE,
+// 	APP_EVT_ERROR,
+// 	APP_EVT_SWITCH_STATE,
+// 	APP_EVT_SENSOR_DEFECT,
+// 	APP_EVT_TRIGGER_EMERGENCY,
+// 	APP_EVT_ALARM_RESET,
+// 	APP_EVT_STACK_CORRUPTION
+// } AppEvent;
 
 /* ===== API ===== */
 int32_t applicationInit();
 int32_t applicationRunCyclic();
 int32_t applicationSendEvent(int32_t eventID);
 int32_t applicationGetCurrentState();
+
+int32_t onEntryInitialization(State_t* pState, int32_t eventID);
+int32_t onStatePreOperational(State_t* pState, int32_t eventID);
+int32_t onStateOperational(State_t* pState, int32_t eventID);
+int32_t onStateEmergency(State_t* pState, int32_t eventID);
+int32_t onEntryFailure(State_t* pState, int32_t eventID);
+
 uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState, uint32_t currentTick);
 
 #endif

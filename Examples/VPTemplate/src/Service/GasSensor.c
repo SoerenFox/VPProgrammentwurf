@@ -2,12 +2,21 @@
 
 // in ppm
 #define MIN_SENSOR_VALUE 200
-#define MAX_SENSOR_VALUE 10e3
+#define MAX_SENSOR_VALUE 10000
 
 #define MIN_SENSOR_VOLTAGE 500000	// in µV (0.5V)
 #define MAX_SENSOR_VOLTAGE 2500000	// in µV (2.5V)
 
 #define GETTOINT 100				// Factor to get dec to int
+
+#define GAS_WARNING_THRESHOLD     3000
+#define GAS_EMERGENCY_THRESHOLD   5000
+
+#define GAS_WARNING_TIME_MS       5000
+#define GAS_EMERGENCY_TIME_MS     3000
+
+static uint32_t warningStartTick = 0;
+static uint32_t emergencyStartTick = 0;
 
 int32_t gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
@@ -76,10 +85,51 @@ uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint
 
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
 {
-    int32_t raw = adcReadChannel(adcChannel);
+    uint32_t raw = adcReadChannel(adcChannel);
 
     gasSensorSetSensorVoltage(pSensor, raw);
 
     return gasSensorGetSensorValue(pSensor);
+}
+
+int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2, uint32_t now)
+{
+		    /* Emergency >5000 ppm for 3 seconds */
+	    if (filteredValue1 > GAS_EMERGENCY_THRESHOLD || filteredValue2 > GAS_EMERGENCY_THRESHOLD)
+	    {
+	        if (emergencyStartTick == 0)
+	        {
+	            emergencyStartTick = now;
+	        }
+
+	        if ((now - emergencyStartTick) >= GAS_EMERGENCY_TIME_MS)
+	        {
+	            return 2;
+	        }
+	    }
+	    else
+	    {
+	        emergencyStartTick = 0;
+	    }
+
+	    /* Warning >3000 ppm for 5 seconds */
+	    if (filteredValue1 > GAS_WARNING_THRESHOLD || filteredValue2 > GAS_WARNING_THRESHOLD)
+	    {
+	        if (warningStartTick == 0)
+	        {
+	            warningStartTick = now;
+	        }
+
+	        if ((now - warningStartTick) >= GAS_WARNING_TIME_MS)
+	        {
+	            return 1;
+	        }
+	    }
+	    else
+	    {
+	        warningStartTick = 0;
+	    }
+
+	    return 0;
 }
 

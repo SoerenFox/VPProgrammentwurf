@@ -39,14 +39,10 @@ GasSensor gGasSensor2;
 DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 
+WaterSensor gWaterSensor;
+
 /***** PRIVATE FUNCTIONS *****************************************************/
-static int32_t onEntryInitialization(State_t* pState, int32_t eventID);
-static int32_t onStatePreOperational(State_t* pState, int32_t eventID);
-static int32_t onStateOperational(State_t* pState, int32_t eventID);
-static int32_t onStateEmergency(State_t* pState, int32_t eventID);
-static int32_t onEntryFailure(State_t* pState, int32_t eventID);
-
-
+static int32_t initializePeripherals();
 
 /***** PRIVATE VARIABLES *****************************************************/
 
@@ -58,11 +54,11 @@ static int32_t onEntryFailure(State_t* pState, int32_t eventID);
  *
  */
 
-static State_t gStateList[] =
+State_t gStateList[] =
 {
     { APP_STATE_INITIALIZATION, onEntryInitialization, 	0, 						0, false },
     { APP_STATE_PREOPERATIONAL, 0, 						onStatePreOperational, 	0, false },
-    { APP_STATE_OPERATIONAL,    0,    					onStateOperational,    	0, false },
+    { APP_STATE_OPERATIONAL,    0 /*onEntryOperational*/,		onStateOperational,    	0 /*onExitOperational*/, false },
     { APP_STATE_EMERGENCY,      0,      				onStateEmergency,      	0, false },
     { APP_STATE_FAILURE,        onEntryFailure,        	0,        				0, false },
 };
@@ -74,22 +70,26 @@ static State_t gStateList[] =
  * The last two members of a transistion row are only the initialization of dynamic
  * members used durin runtim
  */
-static StateTableEntry_t gStateTableEntries[] =
+StateTableEntry_t gStateTableEntries[] =
 {
     /* Initialization */
-    { APP_STATE_INITIALIZATION, APP_STATE_PREOPERATIONAL, APP_EVT_INIT_DONE,              0, 0, 0 },
-    { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_ERROR,                  0, 0, 0 },
+    { APP_STATE_INITIALIZATION, APP_STATE_PREOPERATIONAL, APP_EVT_INIT_DONE,			0, 0, 0 },
+    { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_ERROR, 				0, 0, 0 },
+	{ APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_STACK_CORRUPTION,		0, 0, 0 },
 
     /* PreOperational */
-    { APP_STATE_PREOPERATIONAL, APP_STATE_OPERATIONAL,    APP_EVT_SWITCH_STATE,     0, 0, 0 },
+    { APP_STATE_PREOPERATIONAL, APP_STATE_OPERATIONAL,    APP_EVT_SWITCH_STATE,     	0, 0, 0 },
+	{ APP_STATE_PREOPERATIONAL, APP_STATE_FAILURE,		  APP_EVT_STACK_CORRUPTION, 	0, 0, 0 },
 
     /* Operational */
-    { APP_STATE_OPERATIONAL,    APP_STATE_PREOPERATIONAL, APP_EVT_SWITCH_STATE, 0, 0, 0 },
-    { APP_STATE_OPERATIONAL,    APP_STATE_FAILURE,        APP_EVT_SENSOR_DEFECT,          0, 0, 0 },
-    { APP_STATE_OPERATIONAL,    APP_STATE_EMERGENCY,      APP_EVT_TRIGGER_EMERGENCY,      0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_PREOPERATIONAL, APP_EVT_SWITCH_STATE, 		0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_FAILURE,        APP_EVT_SENSOR_DEFECT,        0, 0, 0 },
+    { APP_STATE_OPERATIONAL,    APP_STATE_EMERGENCY,      APP_EVT_TRIGGER_EMERGENCY,    0, 0, 0 },
+	{ APP_STATE_OPERATIONAL, 	APP_STATE_FAILURE,		  APP_EVT_STACK_CORRUPTION, 	0, 0, 0 },
 
     /* Emergency */
-    { APP_STATE_EMERGENCY,      APP_STATE_OPERATIONAL,    APP_EVT_ALARM_RESET,            0, 0, 0 },
+    { APP_STATE_EMERGENCY,      APP_STATE_OPERATIONAL,    APP_EVT_ALARM_RESET,          0, 0, 0 },
+	{ APP_STATE_EMERGENCY, 		APP_STATE_FAILURE,		  APP_EVT_STACK_CORRUPTION, 	0, 0, 0 },
 };
 
 /**
@@ -154,10 +154,8 @@ static int32_t initializePeripherals()
 
 
 /***** PRIVATE FUNCTIONS *****************************************************/
-static int32_t onEntryInitialization(State_t* pState, int32_t eventID)
+int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 {
-
-
 		// Initialize the System Clock
 		SystemClock_Config();
 
@@ -171,14 +169,16 @@ static int32_t onEntryInitialization(State_t* pState, int32_t eventID)
         gasSensorInitialize(&gGasSensor1, 204);
         gasSensorInitialize(&gGasSensor2, 204);
 
-        if (!checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
-        {
-            applicationSendEvent(APP_EVT_INIT_DONE);
-        }
-        else
+        waterSensorInitialize(&gWaterSensor);
+
+        HAL_Delay(30);
+
+        if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
         {
             applicationSendEvent(APP_EVT_ERROR);
         }
+
+        applicationSendEvent(APP_EVT_INIT_DONE);
 
         return 0;
 
@@ -187,7 +187,7 @@ static int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 
 
 /* Called cyclic while in PREOPERATIONAL (no onEntry used) */
-static int32_t onStatePreOperational(State_t* pState, int32_t eventID)
+int32_t onStatePreOperational(State_t* pState, int32_t eventID)
 {
     (void)pState; (void)eventID;
 
@@ -200,7 +200,7 @@ static int32_t onStatePreOperational(State_t* pState, int32_t eventID)
 }
 
 /* Called cyclic while in OPERATIONAL */
-static int32_t onStateOperational(State_t* pState, int32_t eventID)
+int32_t onStateOperational(State_t* pState, int32_t eventID)
 {
     (void)pState; (void)eventID;
 
@@ -219,7 +219,7 @@ static int32_t onStateOperational(State_t* pState, int32_t eventID)
 }
 
 /* Called cyclic while in EMERGENCY */
-static int32_t onStateEmergency(State_t* pState, int32_t eventID)
+int32_t onStateEmergency(State_t* pState, int32_t eventID)
 {
     (void)pState; (void)eventID;
 
@@ -234,13 +234,16 @@ static int32_t onStateEmergency(State_t* pState, int32_t eventID)
 }
 
 /* Called once after transition into FAILURE */
-static int32_t onEntryFailure(State_t* pState, int32_t eventID)
+int32_t onEntryFailure(State_t* pState, int32_t eventID)
 {
-    (void)pState; (void)eventID;
-
-    /* TODO: enter safe state, latch fault, log
-       No transitions out of FAILURE in your table.
-    */
+	ledSetLED(LED0, LED_OFF);
+	ledSetLED(LED1, LED_OFF);
+	ledSetLED(LED2, LED_ON);
+	ledSetLED(LED3, LED_OFF);
+	if (eventID == APP_EVT_SENSOR_DEFECT)
+	{
+		ledSetLED(LED4, LED_ON);
+	} else ledSetLED(LED4, LED_OFF);
 
     return 0;
 }

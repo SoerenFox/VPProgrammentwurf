@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 #include "ADCModule.h"
+#include "stm32g4xx_hal.h"
+#include "System.h"
+
+#include "HardwareConfig.h"
+#include "TimerModule.h"
 
 #define SENSOR_OK 0
 #define SENSOR_INVALID_PTR -1
@@ -26,5 +31,6 @@ int32_t gasSensorGetSensorVoltage(GasSensor* pSensor);
 uint8_t checkForValideADC(int32_t value1, int32_t value2);
 uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent);
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel);
+int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2, uint32_t now);
 
 #endif

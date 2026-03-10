@@ -13,7 +13,7 @@
  *
  *****************************************************************************/
 #ifndef _DISPLAY_MODULE_H_
-#define _DISPLAC_MODULE_H_
+#define _DISPLAY_MODULE_H_
 
 /***** INCLUDES **************************************************************/
 #include <stdint.h>
