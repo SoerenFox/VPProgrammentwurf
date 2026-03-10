@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "Application.h"
+#include "stm32g4xx_hal.h"
 
 
 
@@ -25,11 +26,14 @@
 #define DEBOUNCE_TIME_MS 50
 #define EMA_SCALE   1000
 #define EMA_ALPHA   500   // 0.5
+#define GASSENSORFACTOR 204
+#define SHORTDELAY 30
+#define FLASHINGTIMEMS 250
 
 /***** PRIVATE MACROS ********************************************************/
 
 
-/***** PRIVATE TYPES *********************************************************/
+/***** Global TYPES *********************************************************/
 EMAFilterData gEmaPot1;
 EMAFilterData gEmaPot2;
 
@@ -45,7 +49,7 @@ WaterSensor gWaterSensor;
 static int32_t initializePeripherals();
 
 /***** PRIVATE VARIABLES *****************************************************/
-
+static uint32_t lastToggle = 0;
 /**
  * @brief List of State for the State Machine
  *
@@ -56,11 +60,11 @@ static int32_t initializePeripherals();
 
 State_t gStateList[] =
 {
-    { APP_STATE_INITIALIZATION, onEntryInitialization, 	0, 						0, false },
-    { APP_STATE_PREOPERATIONAL, 0, 						onStatePreOperational, 	0, false },
-    { APP_STATE_OPERATIONAL,    0 /*onEntryOperational*/,		onStateOperational,    	0 /*onExitOperational*/, false },
-    { APP_STATE_EMERGENCY,      0,      				onStateEmergency,      	0, false },
-    { APP_STATE_FAILURE,        onEntryFailure,        	0,        				0, false },
+    { APP_STATE_INITIALIZATION, onEntryInitialization, 	0, 						0, 					false },
+    { APP_STATE_PREOPERATIONAL, 0, 						0, 						0, 					false },
+    { APP_STATE_OPERATIONAL,    onEntryOperational,		onStateOperational,		onExitOperational, 	false },
+    { APP_STATE_EMERGENCY,      0,      				onStateEmergency,      	onExitEmergency, 	false },
+    { APP_STATE_FAILURE,        onEntryFailure,        	0,        				0, 					false },
 };
 
 /**
@@ -166,12 +170,12 @@ int32_t onEntryInitialization(State_t* pState, int32_t eventID)
         filterInitEMA(&gEmaPot1, EMA_SCALE, EMA_ALPHA, true);
         filterInitEMA(&gEmaPot2, EMA_SCALE, EMA_ALPHA, true);
 
-        gasSensorInitialize(&gGasSensor1, 204);
-        gasSensorInitialize(&gGasSensor2, 204);
+        gasSensorInitialize(&gGasSensor1, GASSENSORFACTOR);
+        gasSensorInitialize(&gGasSensor2, GASSENSORFACTOR);
 
         waterSensorInitialize(&gWaterSensor);
 
-        HAL_Delay(30);
+        HAL_Delay(SHORTDELAY);
 
         if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
         {
@@ -186,17 +190,17 @@ int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 }
 
 
-/* Called cyclic while in PREOPERATIONAL (no onEntry used) */
-int32_t onStatePreOperational(State_t* pState, int32_t eventID)
+
+int32_t onEntryOperational(State_t* pState, int32_t eventID)
 {
-    (void)pState; (void)eventID;
+	ledSetLED(LED0, LED_ON);
+	return 0;
+}
 
-    /* TODO: waiting for enable / command:
-       if (enable_command_received)
-           applicationSendEvent(APP_EVT_SWITCH_OPERATIONAL);
-    */
-
-    return 0;
+int32_t onExitOperational(State_t* pState, int32_t eventID)
+{
+	ledSetLED(LED0, LED_OFF);
+	return 0;
 }
 
 /* Called cyclic while in OPERATIONAL */
@@ -223,14 +227,21 @@ int32_t onStateEmergency(State_t* pState, int32_t eventID)
 {
     (void)pState; (void)eventID;
 
-    /* TODO:
-       - ensure emergency outputs are active (depending on your architecture you may want this in entry)
-       - wait for reset condition / ack
-       if (reset_condition)
-           applicationSendEvent(APP_EVT_ALARM_RESET);
-    */
-
+    uint32_t now = HAL_GetTick();
+    if ((now - lastToggle) >= FLASHINGTIMEMS)
+		{
+			ledToggleLED(LED1);
+			lastToggle = now;
+		}
     return 0;
+}
+
+int32_t onExitEmergency(State_t* pState, int32_t eventID)
+{
+	uint32_t now = HAL_GetTick();
+	lastToggle = now;
+	gasSensorResetThresholdTimers(now);
+	return 0;
 }
 
 /* Called once after transition into FAILURE */
@@ -240,23 +251,24 @@ int32_t onEntryFailure(State_t* pState, int32_t eventID)
 	ledSetLED(LED1, LED_OFF);
 	ledSetLED(LED2, LED_ON);
 	ledSetLED(LED3, LED_OFF);
-	if (eventID == APP_EVT_SENSOR_DEFECT)
+	if (eventID == APP_EVT_STACK_CORRUPTION)
 	{
-		ledSetLED(LED4, LED_ON);
-	} else ledSetLED(LED4, LED_OFF);
+		ledSetLED(LED4, LED_OFF);
+	} else ledSetLED(LED4, LED_ON);
 
     return 0;
 }
 
-uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState, uint32_t currentTick)
+uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState)
 {
+	uint32_t now = HAL_GetTick();
     if (newRawState != btn->rawState)
     {
         btn->rawState = newRawState;
-        btn->lastChangeTick = currentTick;
+        btn->lastChangeTick = now;
     }
 
-    if ((currentTick - btn->lastChangeTick) >= DEBOUNCE_TIME_MS)
+    if ((now - btn->lastChangeTick) >= DEBOUNCE_TIME_MS)
     {
         if (btn->stableState != btn->rawState)
         {

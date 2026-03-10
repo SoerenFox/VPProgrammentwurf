@@ -92,9 +92,10 @@ int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
     return gasSensorGetSensorValue(pSensor);
 }
 
-int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2, uint32_t now)
+int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 {
-		    /* Emergency >5000 ppm for 3 seconds */
+		uint32_t now = HAL_GetTick();
+		/* Emergency >5000 ppm for 3 seconds */
 	    if (filteredValue1 > GAS_EMERGENCY_THRESHOLD || filteredValue2 > GAS_EMERGENCY_THRESHOLD)
 	    {
 	        if (emergencyStartTick == 0)
@@ -131,5 +132,11 @@ int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2, ui
 	    }
 
 	    return 0;
+}
+
+int32_t gasSensorResetThresholdTimers(uint32_t now)
+{
+    emergencyStartTick = now;
+    warningStartTick = now;
 }
 

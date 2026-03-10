@@ -107,10 +107,13 @@ int32_t applicationGetCurrentState();
 
 int32_t onEntryInitialization(State_t* pState, int32_t eventID);
 int32_t onStatePreOperational(State_t* pState, int32_t eventID);
+int32_t onEntryOperational(State_t* pState, int32_t eventID);
 int32_t onStateOperational(State_t* pState, int32_t eventID);
+int32_t onExitOperational(State_t* pState, int32_t eventID);
 int32_t onStateEmergency(State_t* pState, int32_t eventID);
+int32_t onExitEmergency(State_t* pState, int32_t eventID);
 int32_t onEntryFailure(State_t* pState, int32_t eventID);
 
-uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState, uint32_t currentTick);
+uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState);
 
 #endif
