@@ -97,7 +97,3 @@ static int32_t verifyReceived(RadioConnect* pRadioConnect) {
 	previousDataCount = pRadioConnect->packetCounter;
 	return CONNECT_OK;
 }
-
-
-
-Final Review then please
