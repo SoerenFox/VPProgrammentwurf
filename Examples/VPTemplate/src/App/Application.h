@@ -38,6 +38,7 @@
 #include "Scheduler.h"
 #include "GasSensor.h"
 #include "WaterSensor.h"
+#include "RadioConnect.h"
 
 #include "GlobalObjects.h"
 
@@ -59,7 +60,9 @@ extern GasSensor gGasSensor2;
 extern DebounceButton gButtonSW1;
 extern DebounceButton gButtonB1;
 
-extern WaterSensor gWaterSensor;
+extern RadioConnect gRadioConnect;
+
+// extern WaterSensor gWaterSensor;
 
 /***** MACROS ****************************************************************/
 

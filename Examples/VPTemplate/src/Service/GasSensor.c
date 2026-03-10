@@ -138,5 +138,6 @@ int32_t gasSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
     warningStartTick = now;
+    return 0;
 }
 

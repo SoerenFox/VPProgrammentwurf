@@ -28,7 +28,9 @@
 
 #define PERCENTTOLERANCE 50 // Tolerance for filtered gasSensorsValues
 
-#define FLASH_PERIOD_MS 250
+#define FLASH_PERIOD_MS 	250
+#define MAX_DISPLAY_VALUE 	999
+#define DISPLAYFACTOR		10
 
 /***** PRIVATE MACROS ********************************************************/
 
@@ -61,13 +63,13 @@ void taskApp10ms()
 			gCycleCounter++;
 	} else
 	{
+		// GasSensors
 		int32_t gasValue1 = gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0);
 		int32_t gasValue2 = gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1);
 
 		if (checkForValideADC(gasValue1, gasValue2))
 		{
 			applicationSendEvent(APP_EVT_ERROR);
-			return;
 		}
 
 		int32_t pot1_filtered = filterEMA(&gEmaPot1, gasValue1);
@@ -78,19 +80,55 @@ void taskApp10ms()
 			applicationSendEvent(APP_EVT_SENSOR_DEFECT);
 		}
 
-		int32_t aboveValue = gasSensorOverPpmValue(pot1_filtered, pot2_filtered);
+		int32_t errorValue = gasSensorOverPpmValue(pot1_filtered, pot2_filtered);
 
-		if (aboveValue == 2)
+		if (errorValue == 2)
 		{
 			applicationSendEvent(APP_EVT_TRIGGER_EMERGENCY);
 		}
-		else if (aboveValue == 1)
+		else if (errorValue == 1)
 		{
 			ledSetLED(LED1, LED_ON);
 		}
 		else ledSetLED(LED1, LED_OFF);
 
-		// WaterSensor missing
+
+		radioConnectBufferToStruct(&gRadioConnect);
+
+		// WaterSensor
+		uint32_t cmValue = gRadioConnect.sensorValue;
+		if (wasSensorCheckValue(cmValue))
+		{
+			applicationSendEvent(APP_EVT_ERROR);
+		}
+
+		errorValue = waterSensorOverCmValue(cmValue);
+
+		if (errorValue == 3)
+		{
+			applicationSendEvent(APP_EVT_ERROR);
+		}
+		else if (errorValue == 2)
+		{
+			applicationSendEvent(APP_EVT_TRIGGER_EMERGENCY);
+		}
+		else if (errorValue == 1)
+		{
+			ledSetLED(LED1, LED_ON);
+		}
+		else ledSetLED(LED1, LED_OFF);
+
+		if (gCycleCounter % 2 == 0)
+		{
+			if (cmValue > MAX_DISPLAY_VALUE) cmValue = MAX_DISPLAY_VALUE;
+			displayShowDigit(LEFT_DISPLAY, (cmValue/(DISPLAYFACTOR * DISPLAYFACTOR)));
+		}
+		else
+		{
+
+			displayShowDigit(RIGHT_DISPLAY, (int32_t)(cmValue/DISPLAYFACTOR) % DISPLAYFACTOR);
+		}
+		gCycleCounter++;
 	}
 
 	if (debounceButton(&gButtonSW1, buttonGetButtonStatus(BTN_SW1)))

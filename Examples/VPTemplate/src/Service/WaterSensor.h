@@ -10,47 +10,30 @@
 
 #include <stdint.h>
 #include "UARTModule.h"
+#include "stm32g4xx_hal.h"
+#include "System.h"
+
+#include "HardwareConfig.h"
+#include "TimerModule.h"
 
 #define WATER_SENSOR_OK                 0
 #define WATER_SENSOR_INVALID_PTR       -1
 #define WATER_SENSOR_VALUE_INVALID     -2
-#define WATER_SENSOR_UART_ERROR        -3
-#define WATER_SENSOR_TIMEOUT           -4
-#define WATER_SENSOR_CRC_ERROR         -5
-#define WATER_SENSOR_COUNTER_ERROR     -6
 
-#define WATER_SENSOR_PACKET_LENGTH      4
-#define WATER_SENSOR_TIMEOUT_MS         1500
+									// in cm
+#define MIN_WATERSENSOR_VALUE			50
+#define MAX_WATERSENSOR_VALUE 			1000
+#define WATER_WARNING_THRESHOLD     250
+#define WATER_EMERGENCY_THRESHOLD   300
 
-typedef struct _WaterSensor
-{
-    uint16_t sensorValueCm;         // Current water level in cm
-    uint8_t lastPacketCounter;      // Last valid packet counter
-    uint32_t lastReceiveTick;       // Tick of last valid packet
+									// in ms
+#define WATER_WARNING_TIME_MS       10000
+#define WATER_EMERGENCY_TIME_MS     5000
+#define WATER_TIMEOUT_TIME_MS     	1500
 
-    uint8_t hasValidPacket;         // 0 = no valid packet received yet
-    uint8_t sensorDefect;           // 1 = defect detected
+int32_t wasSensorCheckValue(uint32_t cmValue);
+int32_t waterSensorOverCmValue(int32_t cmValue);
+int32_t waterSensorResetThresholdTimers(uint32_t now);
 
-    uint8_t rxBuffer[WATER_SENSOR_PACKET_LENGTH];
-    uint8_t rxIndex;
-} WaterSensor;
-
-int32_t waterSensorInitialize(WaterSensor* pSensor);
-int32_t waterSensorSetSensorValue(WaterSensor* pSensor, uint16_t sensorValue);
-int32_t waterSensorGetSensorValue(WaterSensor* pSensor);
-
-uint8_t waterSensorHasSensorDefect(WaterSensor* pSensor);
-void waterSensorClearSensorDefect(WaterSensor* pSensor);
-
-/**
- * @brief Cyclic 10ms function for receiving UART packets and checking timeout.
- *
- * @param pSensor       Pointer to sensor object
- * @param enabled       1 = UART handling active, 0 = disabled
- * @param currentTick   Current system tick in ms
- *
- * @return WATER_SENSOR_OK if no error occurred
- */
-int32_t waterSensorCyclic10ms(WaterSensor* pSensor, uint8_t enabled, uint32_t currentTick);
 
 #endif

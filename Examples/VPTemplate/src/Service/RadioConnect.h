@@ -16,7 +16,7 @@ typedef struct _RadioConnect {
 	int8_t checksum;
 } RadioConnect;
 #pragma pack(pop)
-;
+
 int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect);
 int32_t radioConnectGetLastInputTime(RadioConnect* pRadioConnect, int* lastInputTime);
 

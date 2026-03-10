@@ -43,7 +43,9 @@ GasSensor gGasSensor2;
 DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
 
-WaterSensor gWaterSensor;
+RadioConnect gRadioConnect;
+
+// WaterSensor gWaterSensor;
 
 /***** PRIVATE FUNCTIONS *****************************************************/
 static int32_t initializePeripherals();
@@ -173,7 +175,7 @@ int32_t onEntryInitialization(State_t* pState, int32_t eventID)
         gasSensorInitialize(&gGasSensor1, GASSENSORFACTOR);
         gasSensorInitialize(&gGasSensor2, GASSENSORFACTOR);
 
-        waterSensorInitialize(&gWaterSensor);
+        // waterSensorInitialize(&gWaterSensor);
 
         HAL_Delay(SHORTDELAY);
 
@@ -241,6 +243,7 @@ int32_t onExitEmergency(State_t* pState, int32_t eventID)
 	uint32_t now = HAL_GetTick();
 	lastToggle = now;
 	gasSensorResetThresholdTimers(now);
+	waterSensorResetThresholdTimers(now);
 	return 0;
 }
 
