@@ -6,9 +6,7 @@
 #define CONNECT_OK 0
 #define CONNECT_INVALID_PTR -1
 #define CONNECT_VALUE_INVALID -2
-
-#define CONNECT_STRUCT_SIZE 7 // Structure size without checksum in bytes
-#define CONNECT_MIN_SIZE_FOR_RESERVED_BYTE
+#define CONNECT_SENSOR_DEFECT -3
 
 #pragma pack(push, 1)
 typedef struct _RadioConnect {
@@ -18,10 +16,8 @@ typedef struct _RadioConnect {
 	int8_t checksum;
 } RadioConnect;
 #pragma pack(pop)
-
-int32_t radioConnectInitialize(RadioConnect* pRadioConnect);
-int32_t radioConnectSetChecksum(RadioConnect* pRadioConnect);
-
+;
 int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect);
+int32_t radioConnectGetLastInputTime(RadioConnect* pRadioConnect, int* lastInputTime);
 
 #endif
