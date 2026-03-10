@@ -151,8 +151,6 @@ void taskApp50ms()
 
 void taskApp250ms()
 {
-	displayShowDigit(LEFT_DISPLAY, 16);
-	displayShowDigit(RIGHT_DISPLAY, 16);
 	if (isCorrupted())
 	{
 		applicationSendEvent(APP_EVT_STACK_CORRUPTION);
