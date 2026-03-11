@@ -33,7 +33,7 @@ int32_t gasSensorGetSensorValue(GasSensor* pSensor);
 int32_t gasSensorGetSensorVoltage(GasSensor* pSensor);
 
 int8_t checkForValideADC(int32_t value1, int32_t value2);
-int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent);
+int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2);
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel);
 int32_t calculateAvgPpmValue(int32_t filteredValue1, int32_t filteredValue2);
 int32_t gasSensorOverPpmValue(int32_t avgValue);
