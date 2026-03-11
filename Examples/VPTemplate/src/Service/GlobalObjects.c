@@ -24,7 +24,16 @@
 
 
 /***** PRIVATE TYPES *********************************************************/
+EMAFilterData gEmaPot1;
+EMAFilterData gEmaPot2;
 
+GasSensor gGasSensor1;
+GasSensor gGasSensor2;
+
+DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
+DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
+
+RadioConnect gRadioConnect;
 
 /***** PRIVATE PROTOTYPES ****************************************************/
 

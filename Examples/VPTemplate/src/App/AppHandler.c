@@ -5,21 +5,23 @@
  *      Author: kali
  */
 #include "AppHandler.h"
+#include <stdbool.h>
 
 #define PERCENTTOLERANCE 	50 // Tolerance for filtered gasSensorsValues
 #define FLASH_PERIOD_MS 	250
+
 #define MAX_DISPLAY_VALUE 	999
 #define DISPLAYFACTOR		10
 #define DISPLAYSWITCH		2
 #define DASH				16
 
-#define BUTTON_OK 			0
-#define BUTTON_ERR			-1
+// #define TESTVALUE		1000
+
+static bool gGasWarning = false;
+static bool gWaterWarning = false;
 
 
-
-
-int32_t displayDashDash(uint32_t gCycleCounter)
+void displayDashDash(uint32_t gCycleCounter)
 {
 	if (gCycleCounter % DISPLAYSWITCH == 0)
 	{
@@ -29,7 +31,6 @@ int32_t displayDashDash(uint32_t gCycleCounter)
 	{
 		displayShowDigit(RIGHT_DISPLAY, DASH);
 	}
-	return WATER_SENSOR_OK;
 }
 
 int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData* gEMA1, EMAFilterData* gEMA2)
@@ -38,17 +39,19 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 	int32_t gasValue1 = gasSensorReadPpmValue(gSensor1, ADC_INPUT0);
 	int32_t gasValue2 = gasSensorReadPpmValue(gSensor2, ADC_INPUT1);
 
-	if (checkForValideADC(gasValue1, gasValue2))
+	if (checkForValideADC(gasValue1, gasValue2) == SENSOR_PPMVALUE_INVALID)
 	{
-		applicationSendEvent(APP_EVT_ERROR);
+		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+		return STATETBL_ERR_OK;
 	}
 
 	int32_t pot1_filtered = filterEMA(gEMA1, gasValue1);
 	int32_t pot2_filtered = filterEMA(gEMA2, gasValue2);
 
-	if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE))
+	if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE) == SENSOR_PPMVALUE_INVALID)
 	{
 		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+		return STATETBL_ERR_OK;
 	}
 
 	int32_t errorValue = gasSensorOverPpmValue(pot1_filtered, pot2_filtered);
@@ -56,22 +59,38 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 	if (errorValue == EMERGENCYTRIGGER)
 	{
 		applicationSendEvent(APP_EVT_TRIGGER_EMERGENCY);
+		return STATETBL_ERR_OK;
 	}
 	else if (errorValue == WARNINGTRIGGER)
 	{
+		gGasWarning = true;
+	}
+	else
+	{
+		gGasWarning = false;
+	}
+
+	/* LED Logik */
+	if (gGasWarning || gWaterWarning)
+	{
 		ledSetLED(LED1, LED_ON);
 	}
-	else ledSetLED(LED1, LED_OFF);
+	else
+	{
+		ledSetLED(LED1, LED_OFF);
+	}
 
 	return SENSOR_OK;
 }
 
 int32_t waterSensorHandler(uint32_t gCycleCounter)
 {
-	uint32_t cmValue = gRadioConnect.sensorValue;
-	if (wasSensorCheckValue(cmValue))
+	uint32_t cmValue = gRadioConnect.sensorValue; // Tested with TESTVALUE
+
+	if (wasSensorCheckValue(cmValue) == (WATER_SENSOR_VALUE_INVALID || UART_ERR_RECEIVE))
 	{
-		applicationSendEvent(APP_EVT_ERROR);
+		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+		return STATETBL_ERR_OK;
 	}
 
 	uint32_t errorValue = waterSensorOverCmValue(cmValue);
@@ -81,22 +100,40 @@ int32_t waterSensorHandler(uint32_t gCycleCounter)
 	if (errorValue == EMERGENCYTRIGGER)
 	{
 		applicationSendEvent(APP_EVT_TRIGGER_EMERGENCY);
+		return STATETBL_ERR_OK;
 	}
 	else if (errorValue == WARNINGTRIGGER)
 	{
+		gWaterWarning = true;
+	}
+	else
+	{
+		gWaterWarning = false;
+	}
+
+	/* LED Logik */
+	if (gGasWarning || gWaterWarning)
+	{
 		ledSetLED(LED1, LED_ON);
 	}
-	else ledSetLED(LED1, LED_OFF);
+	else
+	{
+		ledSetLED(LED1, LED_OFF);
+	}
+
+	if (cmValue > MAX_DISPLAY_VALUE)
+	{
+		cmValue = MAX_DISPLAY_VALUE;
+	}
 
 	if (gCycleCounter % DISPLAYSWITCH == 0)
 	{
-		if (cmValue > MAX_DISPLAY_VALUE) cmValue = MAX_DISPLAY_VALUE;
 		displayShowDigit(LEFT_DISPLAY, (cmValue/(DISPLAYFACTOR * DISPLAYFACTOR)));
 	}
 	else
 	{
-
-		displayShowDigit(RIGHT_DISPLAY, (int32_t)(cmValue/DISPLAYFACTOR) % DISPLAYFACTOR);
+		int32_t new = (cmValue/DISPLAYFACTOR);
+		displayShowDigit(RIGHT_DISPLAY, (int32_t)(new) % DISPLAYFACTOR);
 	}
 	return WATER_SENSOR_OK;
 }
@@ -109,6 +146,7 @@ int32_t buttonHandler(DebounceButton* gButtonSW1, DebounceButton* gButtonB1)
 		if (gButtonSW1->stableState)
 		{
 			applicationSendEvent(APP_EVT_SWITCH_STATE);
+			return STATETBL_ERR_OK;
 		}
 	}
 
@@ -118,6 +156,7 @@ int32_t buttonHandler(DebounceButton* gButtonSW1, DebounceButton* gButtonB1)
 		if (gButtonB1->stableState)
 		{
 			applicationSendEvent(APP_EVT_ALARM_RESET);
+			return STATETBL_ERR_OK;
 		}
 	}
 	return BUTTON_OK;

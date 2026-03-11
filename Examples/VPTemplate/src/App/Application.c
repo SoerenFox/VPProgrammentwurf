@@ -15,28 +15,13 @@
 
 
 /***** INCLUDES **************************************************************/
-#include <string.h>
-
 #include "Application.h"
-#include "stm32g4xx_hal.h"
-
-
 
 /***** PRIVATE CONSTANTS *****************************************************/
 
 /***** PRIVATE MACROS ********************************************************/
 
 /***** Global TYPES *********************************************************/
-EMAFilterData gEmaPot1;
-EMAFilterData gEmaPot2;
-
-GasSensor gGasSensor1;
-GasSensor gGasSensor2;
-
-DebounceButton gButtonSW1 = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
-DebounceButton gButtonB1  = { BUTTON_RELEASED, BUTTON_RELEASED, 0};
-
-RadioConnect gRadioConnect;
 
 // WaterSensor gWaterSensor;
 
@@ -73,7 +58,7 @@ StateTableEntry_t gStateTableEntries[] =
 {
     /* Initialization */
     { APP_STATE_INITIALIZATION, APP_STATE_PREOPERATIONAL, APP_EVT_INIT_DONE,			0, 0, 0 },
-    { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_ERROR, 				0, 0, 0 },
+    { APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_SENSOR_DEFECT, 		0, 0, 0 },
 	{ APP_STATE_INITIALIZATION, APP_STATE_FAILURE,        APP_EVT_STACK_CORRUPTION,		0, 0, 0 },
 
     /* PreOperational */
@@ -153,7 +138,7 @@ static int32_t initializePeripherals()
 
 
 /***** PRIVATE FUNCTIONS *****************************************************/
-int32_t onEntryInitialization(State_t* pState, int32_t eventID)
+int32_t onEntryInitialization()
 {
 	// Initialize the System Clock
 	SystemClock_Config();
@@ -174,49 +159,47 @@ int32_t onEntryInitialization(State_t* pState, int32_t eventID)
 
 	if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
 	{
-		applicationSendEvent(APP_EVT_ERROR);
+		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
 	}
 
 	applicationSendEvent(APP_EVT_INIT_DONE);
 
-    return STATE_OK;
+    return STT_NONE_EVENT;
 }
 
 
 
-int32_t onEntryOperational(State_t* pState, int32_t eventID)
+int32_t onEntryOperational()
 {
 	ledSetLED(LED0, LED_ON);
-	return STATE_OK;
+	return STT_NONE_EVENT;
 }
 
-int32_t onExitOperational(State_t* pState, int32_t eventID)
+int32_t onExitOperational()
 {
 	ledSetLED(LED0, LED_OFF);
-	return STATE_OK;
+	return STT_NONE_EVENT;
 }
 
 /* Called cyclic while in EMERGENCY */
-int32_t onStateEmergency(State_t* pState, int32_t eventID)
+int32_t onStateEmergency()
 {
-    (void)pState; (void)eventID;
-
     uint32_t now = HAL_GetTick();
     if ((now - lastToggle) >= FLASHINGTIMEMS)
 		{
 			ledToggleLED(LED1);
 			lastToggle = now;
 		}
-    return STATE_OK;
+    return STT_NONE_EVENT;
 }
 
-int32_t onExitEmergency(State_t* pState, int32_t eventID)
+int32_t onExitEmergency()
 {
 	uint32_t now = HAL_GetTick();
 	lastToggle = now;
 	gasSensorResetThresholdTimers(now);
 	waterSensorResetThresholdTimers(now);
-	return STATE_OK;
+	return STT_NONE_EVENT;
 }
 
 /* Called once after transition into FAILURE */
@@ -231,7 +214,7 @@ int32_t onEntryFailure(State_t* pState, int32_t eventID)
 		ledSetLED(LED4, LED_OFF);
 	} else ledSetLED(LED4, LED_ON);
 
-    return STATE_OK;
+    return STT_NONE_EVENT;
 }
 
 uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState)
@@ -248,10 +231,10 @@ uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState)
         if (btn->stableState != btn->rawState)
         {
             btn->stableState = btn->rawState;
-            return STATE_SWITCH; // state changed
+            return STT_NEW_EVENT; // state changed
         }
     }
 
-    return STATE_OK;
+    return STT_NONE_EVENT;
 }
 

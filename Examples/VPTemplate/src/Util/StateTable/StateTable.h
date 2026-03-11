@@ -36,6 +36,7 @@
 #define STT_UNKNOWN_STATE                   1       //!< Unknown state ID
 
 #define STT_NONE_EVENT                      0       //!< ID for "No Event"
+#define STT_NEW_EVENT                      	1       //!< ID for "Event"
 
 
 /***** TYPES *****************************************************************/

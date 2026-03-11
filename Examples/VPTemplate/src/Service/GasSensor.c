@@ -10,7 +10,7 @@
 #define GETTOINT 100				// Factor to get dec to int
 
 #define GAS_WARNING_THRESHOLD     3000
-#define GAS_EMERGENCY_THRESHOLD   5000
+#define GAS_EMERGENCY_THRESHOLD   8000
 
 #define GAS_WARNING_TIME_MS       5000
 #define GAS_EMERGENCY_TIME_MS     3000
@@ -53,7 +53,7 @@ int32_t gasSensorGetSensorVoltage(GasSensor* pSensor) {
 	return pSensor->sensorVoltage;
 }
 
-uint8_t checkForValideADC(int32_t value1, int32_t value2)
+int8_t checkForValideADC(int32_t value1, int32_t value2)
 {
     if (value1 < 0 || value2 < 0)
     {
@@ -63,19 +63,19 @@ uint8_t checkForValideADC(int32_t value1, int32_t value2)
     return SENSOR_OK;       // values valid
 }
 
-uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
+int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
 {
     if (filteredValue1 < filteredValue2)
     {
     	uint32_t diff = filteredValue2 - filteredValue1;
-    	if ((diff * GETTOINT/filteredValue2) <= percent) return 0;
+    	if ((diff * GETTOINT/filteredValue2) <= percent) return SENSOR_OK;
 
         return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
 
     } else if (filteredValue2 < filteredValue1)
     {
     	uint32_t diff = filteredValue1 - filteredValue2;
-    	if ((diff * GETTOINT/filteredValue1) <= percent) return 0;
+    	if ((diff * GETTOINT/filteredValue1) <= percent) return SENSOR_OK;
 
     	return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
     }
@@ -134,9 +134,8 @@ int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 	    return SENSOR_OK;
 }
 
-int32_t gasSensorResetThresholdTimers(uint32_t now)
+void gasSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
     warningStartTick = now;
-    return SENSOR_OK;
 }

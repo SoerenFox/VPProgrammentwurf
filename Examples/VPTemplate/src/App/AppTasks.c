@@ -15,13 +15,7 @@
 
 
 /***** INCLUDES **************************************************************/
-#include "Application.h"
 #include "AppTasks.h"
-#include "Util/StackMonitor/StackMonitor.h"
-#include "AppHandler.h"
-
-
-
 
 /***** PRIVATE CONSTANTS *****************************************************/
 #define FLASH_PERIOD_MS 	250
@@ -56,7 +50,10 @@ void taskApp10ms()
 		// GasSensor
 		gasSensorHandler(&gGasSensor1, &gGasSensor2, &gEmaPot1, &gEmaPot2);
 
-		radioConnectBufferToStruct(&gRadioConnect);
+		if (radioConnectBufferToStruct(&gRadioConnect) == (CONNECT_INVALID_PTR || CONNECT_SENSOR_DEFECT))
+		{
+			applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+		}
 
 		// WaterSensor
 		waterSensorHandler(gCycleCounter);
@@ -64,7 +61,10 @@ void taskApp10ms()
 	}
 
 	// Buttons
-	buttonHandler(&gButtonSW1, &gButtonB1);
+	if (buttonHandler(&gButtonSW1, &gButtonB1) == BUTTON_ERR)
+	{
+		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+	}
 
 }
 

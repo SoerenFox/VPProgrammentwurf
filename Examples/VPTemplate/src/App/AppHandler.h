@@ -10,8 +10,11 @@
 
 #include "Application.h"
 
+#define BUTTON_OK 			0
+#define BUTTON_ERR			-1
+
 int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData* gEMA1, EMAFilterData* gEMA2);
-int32_t displayDashDash(uint32_t gCycleCounter);
+void displayDashDash(uint32_t gCycleCounter);
 int32_t waterSensorHandler(uint32_t gCycleCounter);
 int32_t buttonHandler(DebounceButton* gButtonSW1, DebounceButton* gButtonB1);
 

@@ -9,9 +9,18 @@
 static uint32_t warningStartTick 	= 0;
 static uint32_t emergencyStartTick 	= 0;
 static uint32_t timeoutStartTick	= 0;
+static int lastInputTime;
 
 
-int32_t wasSensorCheckValue(uint32_t cmValue) {
+int32_t wasSensorCheckValue(uint32_t cmValue)
+{
+	uint32_t now = HAL_GetTick();
+
+	radioConnectGetLastInputTime(&gRadioConnect, &lastInputTime);
+	if (now - lastInputTime > WATER_TIMEOUT_TIME_MS)
+	{
+		return UART_ERR_RECEIVE;
+	}
 
 	if (cmValue == 0) return cmValue;
 
@@ -23,18 +32,6 @@ int32_t wasSensorCheckValue(uint32_t cmValue) {
 int32_t waterSensorOverCmValue(int32_t cmValue)
 {
 		uint32_t now = HAL_GetTick();
-//		if (cmValue == 0)
-//		{
-//			if (timeoutStartTick == 0)
-//			{
-//				timeoutStartTick = now;
-//			}
-//
-//			if ((now - timeoutStartTick) >= WATER_EMERGENCY_TIME_MS)
-//			{
-//				return 3;
-//			}
-//		}
 
 		/* Emergency >300 cm for 5 seconds */
 	    if (cmValue > WATER_EMERGENCY_THRESHOLD)
@@ -75,12 +72,11 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 	    return WATER_SENSOR_OK;
 }
 
-int32_t waterSensorResetThresholdTimers(uint32_t now)
+void waterSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
     warningStartTick = now;
     timeoutStartTick = now;
-    return WATER_SENSOR_OK;
 }
 
 

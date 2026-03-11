@@ -9,11 +9,11 @@
 #include "HardwareConfig.h"
 #include "TimerModule.h"
 
-#define SENSOR_OK 0
-#define SENSOR_INVALID_PTR -1
-#define SENSOR_VALUE_INVALID -2
-#define SENSOR_VOLTAGE_INVALID -3
-#define SENSOR_PPMVALUE_INVALID 1
+#define SENSOR_OK 				 0
+#define SENSOR_INVALID_PTR 		-1
+#define SENSOR_VALUE_INVALID 	-2
+#define SENSOR_VOLTAGE_INVALID 	-3
+#define SENSOR_PPMVALUE_INVALID -4
 
 #define WARNINGTRIGGER 1
 #define EMERGENCYTRIGGER 2
@@ -32,10 +32,10 @@ int32_t gasSensorSetSensorVoltage(GasSensor* pSensor, uint32_t sensorVoltage);
 int32_t gasSensorGetSensorValue(GasSensor* pSensor);
 int32_t gasSensorGetSensorVoltage(GasSensor* pSensor);
 
-uint8_t checkForValideADC(int32_t value1, int32_t value2);
-uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent);
+int8_t checkForValideADC(int32_t value1, int32_t value2);
+int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent);
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel);
 int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2);
-int32_t gasSensorResetThresholdTimers(uint32_t now);
+void gasSensorResetThresholdTimers(uint32_t now);
 
 #endif

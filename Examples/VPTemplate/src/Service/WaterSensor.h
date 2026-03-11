@@ -16,6 +16,8 @@
 #include "HardwareConfig.h"
 #include "TimerModule.h"
 #include "GasSensor.h"
+#include "RadioConnect.h"
+#include "GlobalObjects.h"
 
 #define WATER_SENSOR_OK                 0
 #define WATER_SENSOR_INVALID_PTR       -1
@@ -34,7 +36,7 @@
 
 int32_t wasSensorCheckValue(uint32_t cmValue);
 int32_t waterSensorOverCmValue(int32_t cmValue);
-int32_t waterSensorResetThresholdTimers(uint32_t now);
+void waterSensorResetThresholdTimers(uint32_t now);
 
 
 #endif
