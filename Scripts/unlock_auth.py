@@ -18,7 +18,7 @@ try:
         exit()
 
     for i, port in enumerate(ports):
-        print(f"{i + 1}.", port.description)
+        print(f"{i + 1}.", port.device, port.description)
 
     while True:
         try:
