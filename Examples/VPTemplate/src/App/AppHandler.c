@@ -54,7 +54,7 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 		return STATETBL_ERR_OK;
 	}
 
-	int32_t errorValue = gasSensorOverPpmValue(pot1_filtered, pot2_filtered);
+	int32_t errorValue = gasSensorOverPpmValue(calculateAvgPpmValue(pot1_filtered, pot2_filtered));
 
 	if (errorValue == EMERGENCYTRIGGER)
 	{
