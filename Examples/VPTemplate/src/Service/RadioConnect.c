@@ -40,8 +40,8 @@ int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect) {
 	int8_t hasChar = 0;
 	uartHasData(&hasChar);
 
-	if (hasChar) {
-		uint8_t ch = 0;
+	while (hasChar) {
+		uint8_t ch;
 		uint32_t receiveOK = uartReceiveData(&ch, ONE_BYTE);
 
 		if (receiveOK == UART_ERR_OK) {
@@ -50,7 +50,8 @@ int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect) {
 			if (size >= MIN_SIZE_FOR_RESERVED_BYTE && buffer[size - RESERVED_FIRST_BYTE_POS] == RESERVED_FIRST_BYTE && buffer[size - RESERVED_SECOND_BYTE_POS] == RESERVED_SECOND_BYTE) {
 				if (size != CONNECT_STRUCT_SIZE) {
 					size = 0;
-					return CONNECT_OK;
+					uartHasData(&hasChar);
+					break;
 				}
 				memcpy(pRadioConnect, buffer, sizeof(RadioConnect));
 				size = 0;
@@ -58,6 +59,7 @@ int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect) {
 				return verifyReceived(pRadioConnect);
 			}
 		}
+		uartHasData(&hasChar);
 	}
 	return CONNECT_OK;
 }
