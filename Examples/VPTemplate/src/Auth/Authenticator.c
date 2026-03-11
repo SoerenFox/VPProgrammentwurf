@@ -5,9 +5,6 @@
 #include "UARTModule.h"
 #include "LEDModule.h"
 
-static const char* key = AUTH_KEY;
-
-// internal return codes
 #define KEY_IN_PROGRESS  0
 #define KEY_DONE         1
 #define KEY_TIMEOUT     -1
@@ -20,7 +17,7 @@ static int32_t checkForInitChar(Auth* pAuth);
 static int32_t checkForKey(Auth* pAuth);
 
 static void copyAuthToRam(void);
-static void decryptAuth(void);
+static void decryptAuth(uint8_t key[], uint32_t keyLen);
 
 int32_t authInitialize(Auth* pAuth) {
     if (!pAuth) return AUTH_INVALID_PTR;
@@ -80,7 +77,7 @@ int32_t authPrepareApp(Auth* pAuth) {
 
         case AUTH_SUB_DECRYPT_KEY:
         	copyAuthToRam();
-        	decryptAuth();
+        	decryptAuth(pAuth->keyBuf, pAuth->keyLen);
             ledSetLED(LED1, LED_OFF);
             pAuth->state = AUTH_STATE_START_APP;
             break;
@@ -157,7 +154,7 @@ static int32_t checkForKey(Auth* pAuth) {
 		uint32_t receiveOK = uartReceiveData(&ch, 1);
 
 		if (receiveOK == UART_ERR_OK) {
-			if (ch == '\n' && strcmp((char*)pAuth->keyBuf, key) == 0) {
+			if (ch == '\n') {
 				return KEY_DONE;
 			}
 			else if (ch == '\r') {
@@ -187,12 +184,9 @@ static void copyAuthToRam(void) {
 /**
  * @brief Runs same XOR encrypting logic of provided python code again.
  */
-static void decryptAuth(void) {
+static void decryptAuth(uint8_t key[], uint32_t keyLen) {
     uint8_t* ptr = &_sauth;
     uint32_t length = (uint32_t)(&_eauth - &_sauth);
-
-    const uint8_t key[] = AUTH_KEY;
-    const uint32_t keyLen = sizeof(key) - 1; // exclude null terminator
 
     for (uint32_t i = 0; i < length; i++)
     {
