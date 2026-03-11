@@ -1,0 +1,63 @@
+# Ignore compiled PDFs and other outputs
+*.pdf
+
+# Allow PDFs in diagrams folder
+!diagrams/*.pdf
+
+# LaTeX auxiliary and build files
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.synctex
+*.nav
+*.snm
+*.vrb
+*.run.xml
+
+# Temporary/compressed files
+*.gz
+*.zip
+
+# Editor backups and temp files
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# TeXstudio / TeXmaker / other LaTeX editors
+*.txs
+*.texpadtmp
+
+# Build directories
+_build/
+build/
+dist/
+
+# latexmk and other tool artifacts
+.latexmkrc
+
+# Common output directories
+out/
+

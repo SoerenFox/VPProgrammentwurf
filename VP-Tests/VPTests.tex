@@ -1,0 +1,68 @@
+\documentclass[
+    fontsize=12pt,
+    paper=a4,
+    twoside=false,
+    listof=totoc,
+    bibliography=totoc,
+    titlepage,
+    headsepline,
+    DIV=18,
+    BCOR=12mm,
+    cleardoublepage=empty,
+    parskip
+]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{pdfpages}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+
+\lstdefinestyle{CStyle}{
+    language=C,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    breaklines=true,
+    tabsize=2
+}
+
+\newcommand{\titel}{Underground Mining Monitoring System}
+\newcommand{\autor}{Patrick Pöhner (1394051) \\Sören Fox (1348302)}
+\newcommand{\institut}{DHBW Ravensburg\\Campus Friedrichshafen}
+\newcommand{\datum}{\today}
+
+\usepackage[
+    hidelinks,
+    pdftitle={\titel},
+    pdfauthor={\autor}
+]{hyperref}
+
+\begin{document}
+
+\include{pages/cover}
+
+\tableofcontents
+
+\include{chapter/introduction}
+\include{chapter/description}
+
+\listoffigures
+
+\end{document}

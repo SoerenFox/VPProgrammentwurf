@@ -1,0 +1,606 @@
+\chapter{Test Specification}
+
+%-----------------------------------------------------------------%
+    %Test Case 1 - Uart Communication
+%-----------------------------------------------------------------%
+\section{TC-01 - UART Communication}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-01 \\ \hline
+\textbf{Description} & Testing UART Communication in Auth \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 2 - Scheduler Functionality
+%-----------------------------------------------------------------%
+\section{TC-02 - Scheduler Functionality}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-02 \\ \hline
+\textbf{Description} & Verification of the scheduler functionality \\ \hline
+\textbf{Prerequisites} & Scheduler has been initialized \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Configure the three required scheduler intervals
+\item Use \textit{ledToggleLED()} for the test
+\item Run the \textit{main\_app}
+\item Observe the LEDs
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & LEDs should toggle after 10, 50 and 250\,ms \\ \hline
+\textbf{Actual Result} & LED1 and LED2 toggle correctly. LED0 remains permanently on because the toggle rate is too fast to observe \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+gScheduler.pGetHALTick = HAL_GetTick;
+gScheduler.pTask_10ms = task10ms;
+gScheduler.pTask_50ms = task50ms;
+gScheduler.pTask_250ms = task250ms;
+
+int main(void)
+{
+    while(1)
+    {
+        task10ms();
+        task50ms();
+        task250ms();
+    }
+}
+
+void task10ms()
+{
+    ledToggleLED(LED0);
+}
+
+void task50ms()
+{
+    ledToggleLED(LED1);
+}
+
+void task250ms()
+{
+    ledToggleLED(LED2);
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 3 - Transition from Auth to App
+%-----------------------------------------------------------------%
+\section{TC-03 - Transition from Auth to App}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-03 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 4 -
+%-----------------------------------------------------------------%
+\section{TC-04 - Tolerance of the Filtered ADC Values}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-04 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+// in the 10ms task
+if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE))
+{
+    applicationSendEvent(APP_EVT_SENSOR_DEFECT);
+}
+
+uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
+{
+    if (filteredValue1 < filteredValue2)
+    {
+    	uint32_t diff = filteredValue2 - filteredValue1;
+    	if ((diff * GETTOINT/filteredValue2) <= percent) return 0;
+
+        return 1;   // invalid ADC value
+
+    } else if (filteredValue2 < filteredValue1)
+    {
+    	uint32_t diff = filteredValue1 - filteredValue2;
+    	if ((diff * GETTOINT/filteredValue1) <= percent) return 0;
+
+    	return 1;   // invalid ADC value
+    }
+
+    return 0;       // values valid
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 5 - Check State Machine Transition
+%-----------------------------------------------------------------%
+\section{TC-05 - Check State Machine Transition}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-05 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state from Init \\ \hline
+\textbf{Prerequisites} & Start the app and sensor values are invalid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Start the program
+\item Force the transition to Failure by using sensor values
+\item Run the scheduler
+\item The 10ms task for initialization is executed (an LED was used here)
+\item Let it run through 5 cycles
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & After the 50ms task is called, the app should be in the Failure state \\ \hline
+\textbf{Actual Result} & Breakpoint is reached and the state switch works correctly \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
+        {
+            applicationSendEvent(APP_EVT_ERROR); // Breakpoint here to force the error state
+        }
+void taskApp10ms()
+{
+    // (...)
+    case APP_STATE_INITIALIZATION:
+        // Breakpoint here should be passed for 5 cycles
+        ledToggleLED(LED3); 
+        break;
+    case APP_STATE_FAILURE:
+        // Breakpoint to be reached here
+        ledToggleLED(LED4);
+        break;
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 6 - Problematic Sensor Values During Initialization
+%-----------------------------------------------------------------%
+\section{TC-06 - Problematic Sensor Values During Initialization}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-06 \\ \hline
+\textbf{Description} & Problematic sensor values during initialization \\ \hline
+\textbf{Prerequisites} & Start the app \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Debug the system
+\item Set breakpoints on the values and read them out
+\item Inspect the values in Eclipse
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify which breakpoint is hit
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is reached and the system should transition to PreOperational state \\ \hline
+\textbf{Actual Result} & The Failure breakpoint is reached. The values should only be between 200 - 10000 or -1, -2, -3 in case of errors, but invalid values occurred. By adding a short delay before reading, the first values become valid \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Conditionally Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+int32_t onEntryInitialization(State_t* pState, int32_t eventID)
+{
+    // (...)
+    gasSensorInitialize(&gGasSensor1, 204);
+    gasSensorInitialize(&gGasSensor2, 204);
+
+    HAL_Delay(30);  // Testing showed that a delay is necessary here because the sensor needs time to provide valid values. Otherwise, the app immediately switches to Failure because the ADCs do not yet provide valid values at this time.
+
+    if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
+    {
+        applicationSendEvent(APP_EVT_ERROR);
+    }
+
+    applicationSendEvent(APP_EVT_INIT_DONE);
+}
+
+int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
+{
+    uint32_t raw = adcReadChannel(adcChannel);
+
+    gasSensorSetSensorVoltage(pSensor, raw);
+
+    return gasSensorGetSensorValue(pSensor);
+}
+
+int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
+	if (!pSensor) return SENSOR_INVALID_PTR;
+
+	int32_t value = (int32_t)(pSensor->sensorVoltage / pSensor->conversionFactor);
+
+	if (value < MIN_SENSOR_VALUE || value > MAX_SENSOR_VALUE) return SENSOR_VALUE_INVALID;
+
+	return value;
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 7 - Display Visualization
+%-----------------------------------------------------------------%
+\section{TC-07 - Display Visualization}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-07 \\ \hline
+\textbf{Description} & Testing the display visualization with valid values \\ \hline
+\textbf{Prerequisites} & State Operational and water values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Manually giving texting values to the display (230, 280, 1000)
+\item Let the loop run for exact values
+\item Check the display and verify that the values are displayed correctly
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Left and right display show correct values \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+#define TESTVALUE			280
+
+int32_t waterSensorHandler(uint32_t gCycleCounter)
+{
+    uint32_t cmValue = TESTVALUE; // gRadioConnect.sensorValue; original input via uart 
+    // (...)
+    if (cmValue > MAX_DISPLAY_VALUE)
+	{
+		cmValue = MAX_DISPLAY_VALUE;
+	}
+
+	if (gCycleCounter % DISPLAYSWITCH == 0)
+	{
+		displayShowDigit(LEFT_DISPLAY, (cmValue/(DISPLAYFACTOR * DISPLAYFACTOR)));
+	}
+	else
+	{
+		int32_t new = (cmValue/DISPLAYFACTOR);
+		displayShowDigit(RIGHT_DISPLAY, (int32_t)(new) % DISPLAYFACTOR);
+	}
+    // (...)
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 8 - Water Sensor above Threshold
+%-----------------------------------------------------------------%
+\section{TC-08 - Water Sensor above Threshold}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-08 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values < 3000 \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Manually giving texting values to the display (280, 1000)
+\item Let the loop run for exact values
+\item Watch LED1, which indicates a water level above the threshold or State switch to Emergency
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & 
+\begin{enumerate}
+\item LED1 turns on for TESTVALUE = 280
+\item State Emergency for TESTVALUE = 1000
+\end{enumerate}
+\\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 9 -
+%-----------------------------------------------------------------%
+\section{TC-09 - }
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-09 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 10 -
+%-----------------------------------------------------------------%
+\section{TC-10 - }
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-10 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 11 -
+%-----------------------------------------------------------------%
+\section{TC-11 - }
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-11 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+%-----------------------------------------------------------------%
+    %Test Case 12 -
+%-----------------------------------------------------------------%
+\section{TC-12 - }
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-12 \\ \hline
+\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
+\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Execute the 10ms task
+\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
+\item Check the if-condition (see code)
+\item Inspect the values in Eclipse
+\item Manually modify the ADC values
+\item Set a breakpoint on \textit{applicationSendEvent()}
+\item Verify at which values the breakpoint is triggered and validate the calculation
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & Breakpoint is triggered \\ \hline
+\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
+\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Tested Code:}
+
+\begin{lstlisting}[style=CStyle]
+void System_Init(void)
+{
+    HAL_Init();
+    GPIO_Init();
+    UART_Init();
+}
+\end{lstlisting}
+
+\newpage
+
+\chapter{Test Protocol}
