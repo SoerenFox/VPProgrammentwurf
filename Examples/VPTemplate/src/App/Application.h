@@ -62,45 +62,38 @@ extern DebounceButton gButtonB1;
 
 extern RadioConnect gRadioConnect;
 
-// extern WaterSensor gWaterSensor;
-
 /***** MACROS ****************************************************************/
+#define STATE_OK 	0
+#define STATE_SWITCH 1
+
+#define DEBOUNCE_TIME_MS 	50
+#define EMA_SCALE   		1000
+#define EMA_ALPHA   		500   // 0.5
+#define GASSENSORFACTOR 	204
+#define SHORTDELAY 			20
+#define FLASHINGTIMEMS 		250
 
 /* ===== States ===== */
-#define APP_STATE_INITIALIZATION     1
-#define APP_STATE_PREOPERATIONAL     2
-#define APP_STATE_OPERATIONAL        3
-#define APP_STATE_EMERGENCY          4
-#define APP_STATE_FAILURE            5
-
-// typedef enum
-// {
-// 	APP_STATE_INITIALIZATION,
-// 	APP_STATE_PREOPERATIONAL,
-// 	APP_STATE_OPERATIONAL,
-// 	APP_STATE_EMERGENCY,
-// 	APP_STATE_FAILURE
-// } AppState;
+typedef enum
+{
+	APP_STATE_INITIALIZATION = 1,
+	APP_STATE_PREOPERATIONAL,
+	APP_STATE_OPERATIONAL,
+	APP_STATE_EMERGENCY,
+	APP_STATE_FAILURE
+} AppState;
 
 /* ===== Events ===== */
-#define APP_EVT_INIT_DONE               1
-#define APP_EVT_ERROR                   2
-#define APP_EVT_SWITCH_STATE      		3
-#define APP_EVT_SENSOR_DEFECT           4
-#define APP_EVT_TRIGGER_EMERGENCY       5
-#define APP_EVT_ALARM_RESET             6
-#define APP_EVT_STACK_CORRUPTION		7
-
-// typedef enum
-// {
-// 	APP_EVT_INIT_DONE,
-// 	APP_EVT_ERROR,
-// 	APP_EVT_SWITCH_STATE,
-// 	APP_EVT_SENSOR_DEFECT,
-// 	APP_EVT_TRIGGER_EMERGENCY,
-// 	APP_EVT_ALARM_RESET,
-// 	APP_EVT_STACK_CORRUPTION
-// } AppEvent;
+typedef enum
+{
+	APP_EVT_INIT_DONE = 1,
+	APP_EVT_ERROR,
+	APP_EVT_SWITCH_STATE,
+	APP_EVT_SENSOR_DEFECT,
+	APP_EVT_TRIGGER_EMERGENCY,
+	APP_EVT_ALARM_RESET,
+	APP_EVT_STACK_CORRUPTION
+} AppEvent;
 
 /* ===== API ===== */
 int32_t applicationInit();
@@ -111,7 +104,6 @@ int32_t applicationGetCurrentState();
 int32_t onEntryInitialization(State_t* pState, int32_t eventID);
 int32_t onStatePreOperational(State_t* pState, int32_t eventID);
 int32_t onEntryOperational(State_t* pState, int32_t eventID);
-int32_t onStateOperational(State_t* pState, int32_t eventID);
 int32_t onExitOperational(State_t* pState, int32_t eventID);
 int32_t onStateEmergency(State_t* pState, int32_t eventID);
 int32_t onExitEmergency(State_t* pState, int32_t eventID);

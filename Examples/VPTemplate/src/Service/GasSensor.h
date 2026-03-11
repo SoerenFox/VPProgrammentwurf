@@ -13,6 +13,10 @@
 #define SENSOR_INVALID_PTR -1
 #define SENSOR_VALUE_INVALID -2
 #define SENSOR_VOLTAGE_INVALID -3
+#define SENSOR_PPMVALUE_INVALID 1
+
+#define WARNINGTRIGGER 1
+#define EMERGENCYTRIGGER 2
 
 typedef struct _GasSensor {
 	// Sensor voltage in µV

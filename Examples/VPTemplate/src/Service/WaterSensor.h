@@ -15,6 +15,7 @@
 
 #include "HardwareConfig.h"
 #include "TimerModule.h"
+#include "GasSensor.h"
 
 #define WATER_SENSOR_OK                 0
 #define WATER_SENSOR_INVALID_PTR       -1

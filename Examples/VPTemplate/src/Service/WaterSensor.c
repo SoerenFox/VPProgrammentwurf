@@ -6,8 +6,6 @@
  */
 #include "WaterSensor.h"
 
-#include "WaterSensor.h"
-
 static uint32_t warningStartTick 	= 0;
 static uint32_t emergencyStartTick 	= 0;
 static uint32_t timeoutStartTick	= 0;
@@ -25,18 +23,18 @@ int32_t wasSensorCheckValue(uint32_t cmValue) {
 int32_t waterSensorOverCmValue(int32_t cmValue)
 {
 		uint32_t now = HAL_GetTick();
-		if (cmValue == 0)
-		{
-			if (timeoutStartTick == 0)
-			{
-				timeoutStartTick = now;
-			}
-
-			if ((now - timeoutStartTick) >= WATER_EMERGENCY_TIME_MS)
-			{
-				return 3;
-			}
-		}
+//		if (cmValue == 0)
+//		{
+//			if (timeoutStartTick == 0)
+//			{
+//				timeoutStartTick = now;
+//			}
+//
+//			if ((now - timeoutStartTick) >= WATER_EMERGENCY_TIME_MS)
+//			{
+//				return 3;
+//			}
+//		}
 
 		/* Emergency >300 cm for 5 seconds */
 	    if (cmValue > WATER_EMERGENCY_THRESHOLD)
@@ -48,7 +46,7 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 
 	        if ((now - emergencyStartTick) >= WATER_EMERGENCY_TIME_MS)
 	        {
-	            return 2;
+	            return EMERGENCYTRIGGER;
 	        }
 	    }
 	    else
@@ -66,7 +64,7 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 
 	        if ((now - warningStartTick) >= WATER_WARNING_TIME_MS)
 	        {
-	            return 1;
+	            return WARNINGTRIGGER;
 	        }
 	    }
 	    else
@@ -74,7 +72,7 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 	        warningStartTick = 0;
 	    }
 
-	    return 0;
+	    return WATER_SENSOR_OK;
 }
 
 int32_t waterSensorResetThresholdTimers(uint32_t now)
@@ -82,7 +80,7 @@ int32_t waterSensorResetThresholdTimers(uint32_t now)
     emergencyStartTick = now;
     warningStartTick = now;
     timeoutStartTick = now;
-    return 0;
+    return WATER_SENSOR_OK;
 }
 
 

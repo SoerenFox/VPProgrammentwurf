@@ -57,10 +57,10 @@ uint8_t checkForValideADC(int32_t value1, int32_t value2)
 {
     if (value1 < 0 || value2 < 0)
     {
-        return 1;   // invalid ADC value
+        return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
     }
 
-    return 0;       // values valid
+    return SENSOR_OK;       // values valid
 }
 
 uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
@@ -70,17 +70,17 @@ uint8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint
     	uint32_t diff = filteredValue2 - filteredValue1;
     	if ((diff * GETTOINT/filteredValue2) <= percent) return 0;
 
-        return 1;   // invalid ADC value
+        return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
 
     } else if (filteredValue2 < filteredValue1)
     {
     	uint32_t diff = filteredValue1 - filteredValue2;
     	if ((diff * GETTOINT/filteredValue1) <= percent) return 0;
 
-    	return 1;   // invalid ADC value
+    	return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
     }
 
-    return 0;       // values valid
+    return SENSOR_OK;       // values valid
 }
 
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
@@ -105,7 +105,7 @@ int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 
 	        if ((now - emergencyStartTick) >= GAS_EMERGENCY_TIME_MS)
 	        {
-	            return 2;
+	            return EMERGENCYTRIGGER;
 	        }
 	    }
 	    else
@@ -123,7 +123,7 @@ int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 
 	        if ((now - warningStartTick) >= GAS_WARNING_TIME_MS)
 	        {
-	            return 1;
+	            return WARNINGTRIGGER;
 	        }
 	    }
 	    else
@@ -131,13 +131,12 @@ int32_t gasSensorOverPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 	        warningStartTick = 0;
 	    }
 
-	    return 0;
+	    return SENSOR_OK;
 }
 
 int32_t gasSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
     warningStartTick = now;
-    return 0;
+    return SENSOR_OK;
 }
-
