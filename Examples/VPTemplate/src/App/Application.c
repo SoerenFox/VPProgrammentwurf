@@ -28,7 +28,6 @@
 /***** PRIVATE FUNCTIONS *****************************************************/
 static int32_t initializePeripherals();
 static int32_t onEntryInitialization();
-static int32_t onStatePreOperational();
 static int32_t onEntryOperational();
 static int32_t onExitOperational();
 static int32_t onStateEmergency();
@@ -147,7 +146,7 @@ static int32_t initializePeripherals()
 /***** PRIVATE FUNCTIONS *****************************************************/
 
 // As required by the requirements, the system shall start in the Initialization state and automatically transition to the PreOperational state after initialization is done. This is implemented by sending the APP_EVT_INIT_DONE event at the end of this function, which triggers the transition to the PreOperational state.
-staticint32_t onEntryInitialization()
+static int32_t onEntryInitialization()
 {
 	// Initialize the System Clock
 	SystemClock_Config();

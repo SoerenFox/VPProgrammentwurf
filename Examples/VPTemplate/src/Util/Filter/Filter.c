@@ -75,6 +75,8 @@ int32_t filterEMA(EMAFilterData* pEMA, int32_t x)
 
     int32_t y = (a * (int32_t)x) + ((S - a) * (int32_t)pEMA->previousValue);
 
+    y /= S;
+
     pEMA->previousValue = (int32_t)y;
     return pEMA->previousValue;
 }

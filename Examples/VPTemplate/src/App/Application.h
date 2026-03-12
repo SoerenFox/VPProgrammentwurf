@@ -57,14 +57,6 @@ int32_t applicationRunCyclic();
 int32_t applicationSendEvent(int32_t eventID);
 int32_t applicationGetCurrentState();
 
-int32_t onEntryInitialization();
-int32_t onStatePreOperational();
-int32_t onEntryOperational();
-int32_t onExitOperational();
-int32_t onStateEmergency();
-int32_t onExitEmergency();
-int32_t onEntryFailure(State_t* pState, int32_t eventID);
-
 uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState);
 
 #endif

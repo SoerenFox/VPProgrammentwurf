@@ -13,6 +13,7 @@
 #define DISPLAYFACTOR		10
 #define DISPLAYSWITCH		2
 #define DASH				16
+#define TESTVALUE			187
 
 // #define TESTVALUE		1000
 
@@ -87,7 +88,11 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 // Function to handle the water sensor logic, including reading values, checking for validity, triggering warnings or emergencies and updating the display
 int32_t waterSensorHandler(uint32_t gCycleCounter)
 {
-	uint32_t cmValue = gRadioConnect.sensorValue; // Tested with TESTVALUE
+	// Here the cmValue should be set the value given by the radioConnect, which should get it via uart.
+	// uint32_t cmValue = gRadioConnect.sensorValue;
+	// Tested with defined TESTVALUE
+	// Sind the python script for uart did not work its tested with a defined testing value and does not change over the runtime
+	uint32_t cmValue = TESTVALUE;
 
 	if (wasSensorCheckValue(cmValue) == (WATER_SENSOR_VALUE_INVALID || UART_ERR_RECEIVE))
 	{
