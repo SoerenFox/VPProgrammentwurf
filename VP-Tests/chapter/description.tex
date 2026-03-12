@@ -707,7 +707,7 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 \\ \hline
 \textbf{Expected Result} & The stack monitor values change according to the increased stack usage and correctly reflect the additional consumed stack memory. \\ \hline
 \textbf{Actual Result} & The monitored values indicate the expected change in stack usage after introducing the additional stack consumption. \\ \hline
-\textbf{Disclaimer} & This test was executed using a stack size configuration that differs from the final system configuration defined in the requirements. The test was performed before later changes to the system code were implemented. Nevertheless, the results remain valid for verifying the correct functionality of the stack monitoring mechanism. Evidence of the measurement results is shown in Figure~\ref{fig:StackMonitoring} and Figure~\ref{fig:StackMonitoringArray}. \\ \hline
+\textbf{Disclaimer} & This test used a different stack size configuration than the final requirements, but results remain valid for verifying the stack monitoring mechanism. See Figure~\ref{fig:StackMonitoring} and Figure~\ref{fig:StackMonitoringArray}. \\ \hline
 \textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
 \end{tabular}
 \end{table}
@@ -755,7 +755,7 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 \end{enumerate}
 \\ \hline
 \textbf{Expected Result} & When stack corruption occurs, the \textit{isCorrupted()} function returns \textit{true} and the system reacts according to the defined error handling behaviour. \\ \hline
-\textbf{Actual Result} & The stack monitor detects stack corruption when the allocated array is actively filled and reports the error condition accordingly. When the array is only reserved but not filled, the corruption is not detected because the memory region is not actively written to. Evidence of the observed behaviour is shown in Figure~\ref{fig:stackoverflowEmpty} and Figure~\ref{fig:stackoverflowFilled}. \\ \hline
+\textbf{Actual Result} & Corruption detected when array is filled, not when only reserved. See Figure~\ref{fig:stackoverflowEmpty} and Figure~\ref{fig:stackoverflowFilled}. \\ \hline
 \textbf{Status} & \textcolor{orange!60!black}{Conditionally Passed} \\ \hline
 \end{tabular}
 \end{table}
