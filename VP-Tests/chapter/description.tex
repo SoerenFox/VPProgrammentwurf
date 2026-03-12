@@ -836,3 +836,52 @@ The purpose of this test is to verify that the Authenticator correctly handles e
     \caption{Debugger output showing increased stack usage after introducing an additional stack array}
     \label{fig:StackMonitoringArray}
 \end{figure}
+
+\newpage
+
+%-----------------------------------------------------------------%
+%Test Case 15 - Verification of Stack Corruption Detection
+%-----------------------------------------------------------------%
+\section{TC-15 - Verification of Stack Corruption Detection}
+\label{sec:tc15}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Test Case ID} & TC-15 \\ \hline
+\textbf{Description} & Verification that the stack monitor correctly detects stack corruption while the full application state machine is active. \\ \hline
+\textbf{Prerequisites} & The full application is compiled and running with an active state table and the integrated stack monitor module. Debugging tools are available to observe the return value of the stack monitoring functions. \\ \hline
+\textbf{Test Steps} &
+\begin{enumerate}
+\item Run the application under normal operating conditions.
+\item Monitor the return value of the \textit{isCorrupted()} function during execution using the debugger.
+\item Introduce a manual stack overflow by allocating a large array on the stack.
+\item First allocate the array without filling it.
+\item Execute the application and observe the return value of \textit{isCorrupted()}.
+\item Modify the code to fill the allocated array, forcing actual stack memory usage.
+\item Execute the application again and observe whether \textit{isCorrupted()} returns \textit{true}.
+\end{enumerate}
+\\ \hline
+\textbf{Expected Result} & When stack corruption occurs, the \textit{isCorrupted()} function returns \textit{true} and the system reacts according to the defined error handling behaviour. \\ \hline
+\textbf{Actual Result} & The stack monitor detects stack corruption when the allocated array is actively filled and reports the error condition accordingly. When the array is only reserved but not filled, the corruption is not detected because the memory region is not actively written to. Evidence of the observed behaviour is shown in Figure~\ref{fig:stackoverflowEmpty} and Figure~\ref{fig:stackoverflowFilled}. \\ \hline
+\textbf{Status} & \textcolor{orange!60!black}{Conditionally Passed} \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{figures/SackOverflowEmpty.png}
+    \caption{Debugger output showing that reserving a large stack array without writing to it does not trigger stack corruption detection}
+    \label{fig:stackoverflowEmpty}
+    \end{figure}
+
+\begin{figure}[H]
+    \centering\includegraphics[width=0.85\linewidth]{figures/StackOverflowFilled.png}
+    \caption{Debugger output showing stack corruption detection after the allocated array is filled and memory is actively written}
+    \label{fig:stackoverflowFilled}
+\end{figure}
+
+\newpage
