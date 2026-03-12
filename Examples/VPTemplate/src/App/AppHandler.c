@@ -19,7 +19,8 @@
 static bool gGasWarning = false;
 static bool gWaterWarning = false;
 
-
+// Function to show "--" on the display while not in operational state
+// Requires gCycleCounter to switch between left and right display
 void displayDashDash(uint32_t gCycleCounter)
 {
 	if (gCycleCounter % DISPLAYSWITCH == 0)
@@ -32,6 +33,7 @@ void displayDashDash(uint32_t gCycleCounter)
 	}
 }
 
+// Function to handle the gas sensor logic, including reading values, filtering, checking for mismatches and triggering warnings or emergencies
 int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData* gEMA1, EMAFilterData* gEMA2)
 {
 	// GasSensors
@@ -82,6 +84,7 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 	return SENSOR_OK;
 }
 
+// Function to handle the water sensor logic, including reading values, checking for validity, triggering warnings or emergencies and updating the display
 int32_t waterSensorHandler(uint32_t gCycleCounter)
 {
 	uint32_t cmValue = gRadioConnect.sensorValue; // Tested with TESTVALUE
@@ -137,6 +140,7 @@ int32_t waterSensorHandler(uint32_t gCycleCounter)
 	return WATER_SENSOR_OK;
 }
 
+// Function to handle button inputs, including debouncing and triggering events based on button states
 int32_t buttonHandler(DebounceButton* gButtonSW1, DebounceButton* gButtonB1)
 {
 	if (debounceButton(gButtonSW1, buttonGetButtonStatus(BTN_SW1)))

@@ -38,12 +38,14 @@ static uint32_t gCycleCounter = 0;
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
-
+// This Function runs every 10ms for all sorts of input handling and processing
 void taskApp10ms()
 {
 	if ((applicationGetCurrentState() != APP_STATE_OPERATIONAL))
 	{
+		// Display '--' in case of non-operational state
 		displayDashDash(gCycleCounter);
+		// Counter to switch between left and right display
 		gCycleCounter++;
 	} else
 	{
@@ -52,10 +54,11 @@ void taskApp10ms()
 
 		if (radioConnectBufferToStruct(&gRadioConnect) == (CONNECT_INVALID_PTR || CONNECT_SENSOR_DEFECT))
 		{
+			// If there is an sensor error switch to failure state 
 			applicationSendEvent(APP_EVT_SENSOR_DEFECT);
 		}
 
-		// WaterSensor
+		// WaterSensor to display the correct value on the display and check for emergency/warning
 		waterSensorHandler(gCycleCounter);
 		gCycleCounter++;
 	}
@@ -67,12 +70,12 @@ void taskApp10ms()
 	}
 
 }
-
+// This Function runs every 50ms for checking events and updating the state table
 void taskApp50ms()
 {
 	applicationRunCyclic();
 }
-
+// This Function runs every 250ms for checking the stack overflow
 void taskApp250ms()
 {
 	if (isCorrupted())

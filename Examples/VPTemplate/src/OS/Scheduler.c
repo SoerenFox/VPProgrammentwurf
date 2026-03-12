@@ -45,6 +45,7 @@ int32_t schedInitialize(Scheduler* pScheduler)
 
     uint32_t now = 0;
 
+    // Set all three needed schedulers to the current HAL tick value to start with a defined state
     pScheduler->halTick_10ms   = now;
     pScheduler->halTick_50ms   = now;
     pScheduler->halTick_250ms  = now;
@@ -70,6 +71,7 @@ int32_t schedCycle(Scheduler* pScheduler)
 
     uint32_t now = pScheduler->pGetHALTick();
 
+    // Check each slot if it is due for execution and runs task if so
     runSlot(now, HAL_TICK_VALUE_10MS,   &pScheduler->halTick_10ms,   pScheduler->pTask_10ms);
     runSlot(now, HAL_TICK_VALUE_50MS,   &pScheduler->halTick_50ms,   pScheduler->pTask_50ms);
     runSlot(now, HAL_TICK_VALUE_250MS,  &pScheduler->halTick_250ms,  pScheduler->pTask_250ms);

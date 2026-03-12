@@ -12,7 +12,6 @@
 #define INIT_CHAR_NO 0
 #define INIT_CHAR_YES 1
 
-static void ResetKeyReception(Auth* pAuth);
 static int32_t checkForInitChar(Auth* pAuth);
 static int32_t checkForKey(Auth* pAuth);
 
@@ -52,23 +51,21 @@ int32_t authPrepareApp(Auth* pAuth) {
         case AUTH_SUB_CHECK_FOR_A:
             uint32_t now = HAL_GetTick();
 
-            // Startzeit einmalig setzen beim Eintritt
+            // get starting time
             if (pAuth->initStartTick == 0u) {
                 pAuth->initStartTick = now;
                 ledSetLED(LED1, LED_OFF); // D1 sicher aus
             }
 
-            // Timeout 15s: wenn 'A' nicht kommt -> Failure
+            // Timeout 15s: if no 'A' received -> Failure
             if ((now - pAuth->initStartTick) >= TIMEOUT_INIT_15S_MS) {
                 ledSetLED(LED1, LED_OFF);
                 pAuth->state = AUTH_STATE_FAILURE;
                 break;
             }
 
-            // 'A' prüfen (nicht-blockierend)
-            if (checkForInitChar(pAuth)) { // TODO
-                // Wechsel zur Key-Receive-Phase
-                ResetKeyReception(pAuth); // TODO
+            // 'A' received -> move to WAIT_FOR_KEY
+            if (checkForInitChar(pAuth)) { 
                 pAuth->subState = AUTH_SUB_WAIT_FOR_KEY;
             }
             break;
@@ -76,11 +73,11 @@ int32_t authPrepareApp(Auth* pAuth) {
         // WAIT_FOR_KEY
         // Waiting for Key with LEDs after (10/30/45s) and Timeout
         case AUTH_SUB_WAIT_FOR_KEY:
-            int32_t keyStatus = checkForKey(pAuth); // TODO
+            int32_t keyStatus = checkForKey(pAuth);
 
             if (keyStatus == KEY_DONE) {
-                // Key komplett empfangen -> weiter
-                ledSetLED(LED1, LED_OFF); // D1 aus bevor wir weitergehen
+                // Key complete, set LED1 off and move to decryption and app start
+                ledSetLED(LED1, LED_OFF);
                 pAuth->subState = AUTH_SUB_DECRYPT_KEY;
             }
             else if (keyStatus == KEY_TIMEOUT) {
@@ -97,22 +94,6 @@ int32_t authPrepareApp(Auth* pAuth) {
             break;
     }
     return AUTH_OK;
-}
-
-static void ResetKeyReception(Auth* pAuth) {
-    pAuth->keyStartTick  = HAL_GetTick();
-    pAuth->lastFlashTick = pAuth->keyStartTick;
-    pAuth->keyLen = 0u;
-
-    for (uint32_t i = 0; i < (MAX_KEY_LEN + 1u); i++) {
-        pAuth->keyBuf[i] = 0u;
-    }
-
-    // LED D1 initial aus (wird nach 10s an / nach 30s blinkend)
-    ledSetLED(LED1, LED_OFF);
-
-    // init-wait timing nicht mehr nötig
-    pAuth->initStartTick = 0u;
 }
 
 static int32_t checkForInitChar(Auth* pAuth) {
@@ -155,7 +136,7 @@ static int32_t checkForKey(Auth* pAuth) {
         return KEY_TIMEOUT;
     }
 
-    // LED-Stufen: 0..10s OFF, 10..30s ON, ab 30s BLINK
+    // LED1: 0..10s OFF, 10..30s ON, > 30s Flashing
     if (elapsed < KEY_STAGE1_10S_MS) {
         ledSetLED(LED1, LED_OFF);
     }

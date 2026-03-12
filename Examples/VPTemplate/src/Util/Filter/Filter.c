@@ -33,6 +33,7 @@
 
 /***** PUBLIC FUNCTIONS ******************************************************/
 
+// Initializes the EMA filter with the specified parameters
 int32_t filterInitEMA(EMAFilterData* pEMA, int32_t scalingFactor, int32_t alpha, bool resetFilter)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
@@ -46,6 +47,7 @@ int32_t filterInitEMA(EMAFilterData* pEMA, int32_t scalingFactor, int32_t alpha,
     return FILTER_ERR_OK;
 }
 
+// Resets the EMA filter to its initial state
 int32_t filterResetEMA(EMAFilterData* pEMA)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
@@ -54,6 +56,7 @@ int32_t filterResetEMA(EMAFilterData* pEMA)
     return FILTER_ERR_OK;
 }
 
+// Applies the EMA filter to the input value and returns the filtered output
 int32_t filterEMA(EMAFilterData* pEMA, int32_t x)
 {
     if (!pEMA) return FILTER_ERR_INVALID_PTR;
@@ -67,15 +70,10 @@ int32_t filterEMA(EMAFilterData* pEMA, int32_t x)
     }
 
     // y = (a*x + (S-a)*y_prev) / S
-    int64_t S = (int64_t)pEMA->scalingFactor;
-    int64_t a = (int64_t)pEMA->alpha;
+    int32_t S = (int32_t)pEMA->scalingFactor;
+    int32_t a = (int32_t)pEMA->alpha;
 
-    int64_t y = (a * (int64_t)x) + ((S - a) * (int64_t)pEMA->previousValue);
-
-    // optional: runden
-    if (y >= 0) y += (S / 2);
-
-    y /= S;
+    int32_t y = (a * (int32_t)x) + ((S - a) * (int32_t)pEMA->previousValue);
 
     pEMA->previousValue = (int32_t)y;
     return pEMA->previousValue;

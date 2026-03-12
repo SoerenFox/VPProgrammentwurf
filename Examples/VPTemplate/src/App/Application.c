@@ -27,6 +27,13 @@
 
 /***** PRIVATE FUNCTIONS *****************************************************/
 static int32_t initializePeripherals();
+static int32_t onEntryInitialization();
+static int32_t onStatePreOperational();
+static int32_t onEntryOperational();
+static int32_t onExitOperational();
+static int32_t onStateEmergency();
+static int32_t onExitEmergency();
+static int32_t onEntryFailure(State_t* pState, int32_t eventID);
 
 /***** PRIVATE VARIABLES *****************************************************/
 static uint32_t lastToggle = 0;
@@ -138,7 +145,9 @@ static int32_t initializePeripherals()
 
 
 /***** PRIVATE FUNCTIONS *****************************************************/
-int32_t onEntryInitialization()
+
+// As required by the requirements, the system shall start in the Initialization state and automatically transition to the PreOperational state after initialization is done. This is implemented by sending the APP_EVT_INIT_DONE event at the end of this function, which triggers the transition to the PreOperational state.
+staticint32_t onEntryInitialization()
 {
 	// Initialize the System Clock
 	SystemClock_Config();
@@ -153,10 +162,10 @@ int32_t onEntryInitialization()
 	gasSensorInitialize(&gGasSensor1, GASSENSORFACTOR);
 	gasSensorInitialize(&gGasSensor2, GASSENSORFACTOR);
 
-	// waterSensorInitialize(&gWaterSensor);
 
+    // Here the application can check if the sensors are working by reading the ADC values and checking if they are valid. If not, it can send the APP_EVT_SENSOR_DEFECT event to transition to the Failure state.
 	HAL_Delay(SHORTDELAY);
-
+    // The short delay is needed to ensure that the ADC has finished its first conversion after initialization before reading the values for the first time. This is necessary because the ADC might return invalid values if read immediately after initialization.
 	if (checkForValideADC(gasSensorReadPpmValue(&gGasSensor1, ADC_INPUT0), gasSensorReadPpmValue(&gGasSensor2, ADC_INPUT1)))
 	{
 		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
@@ -167,9 +176,8 @@ int32_t onEntryInitialization()
     return STT_NONE_EVENT;
 }
 
-
-
-int32_t onEntryOperational()
+// Turns on LED0 when entering the Operational state and turns it off when exiting the Operational state. 
+static int32_t onEntryOperational()
 {
 	ledSetLED(LED0, LED_ON);
 	return STT_NONE_EVENT;
@@ -181,8 +189,8 @@ int32_t onExitOperational()
 	return STT_NONE_EVENT;
 }
 
-/* Called cyclic while in EMERGENCY */
-int32_t onStateEmergency()
+// Called cyclic while in EMERGENCY to toggle LED1 with a defined flashing time. The function also resets the threshold timers of the sensors to ensure that they do not trigger a sensor defect event after exiting the emergency state.
+static int32_t onStateEmergency()
 {
     uint32_t now = HAL_GetTick();
     if ((now - lastToggle) >= FLASHINGTIMEMS)
@@ -193,7 +201,7 @@ int32_t onStateEmergency()
     return STT_NONE_EVENT;
 }
 
-int32_t onExitEmergency()
+static int32_t onExitEmergency()
 {
 	uint32_t now = HAL_GetTick();
 	lastToggle = now;
@@ -202,8 +210,8 @@ int32_t onExitEmergency()
 	return STT_NONE_EVENT;
 }
 
-/* Called once after transition into FAILURE */
-int32_t onEntryFailure(State_t* pState, int32_t eventID)
+// Called once after transition into FAILURE state to turn on LED2 to indicate that the system is in a failure state. Additionally, LED4 is turned on if the failure was caused by a sensor defect and turned off if the failure was caused by stack corruption.
+static int32_t onEntryFailure(State_t* pState, int32_t eventID)
 {
 	ledSetLED(LED0, LED_OFF);
 	ledSetLED(LED1, LED_OFF);
@@ -217,6 +225,7 @@ int32_t onEntryFailure(State_t* pState, int32_t eventID)
     return STT_NONE_EVENT;
 }
 
+// This function is used to debounce the buttons. It takes a pointer to a DebounceButton struct and the new raw state of the button as input. It updates the raw state and stable state of the button based on the debounce time and returns STT_NEW_EVENT if the stable state has changed, otherwise it returns STT_NONE_EVENT.
 uint8_t debounceButton(DebounceButton *btn, uint8_t newRawState)
 {
 	uint32_t now = HAL_GetTick();

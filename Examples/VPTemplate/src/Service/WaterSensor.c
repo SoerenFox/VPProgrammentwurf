@@ -6,12 +6,11 @@
  */
 #include "WaterSensor.h"
 
-static uint32_t warningStartTick 	= 0;
-static uint32_t emergencyStartTick 	= 0;
-static uint32_t timeoutStartTick	= 0;
+static uint32_t warningStartTick 	= 0; // This variable stores the tick count when the water level first exceeded the warning threshold
+static uint32_t emergencyStartTick 	= 0; // This variable stores the tick count when the water level first exceeded the emergency threshold
 static int lastInputTime;
 
-
+// This function checks if the given cm value is valid and if we have received a new value within the defined timeout, otherwise it returns an error status
 int32_t wasSensorCheckValue(uint32_t cmValue)
 {
 	uint32_t now = HAL_GetTick();
@@ -29,11 +28,12 @@ int32_t wasSensorCheckValue(uint32_t cmValue)
 	return cmValue;
 }
 
+// This function checks if the given cm value exceeds the defined thresholds for waterSensor with their specific time limits and returns the corresponding status
 int32_t waterSensorOverCmValue(int32_t cmValue)
 {
 		uint32_t now = HAL_GetTick();
 
-		/* Emergency >300 cm for 5 seconds */
+		// Emergency >300 cm for 5 seconds
 	    if (cmValue > WATER_EMERGENCY_THRESHOLD)
 	    {
 	        if (emergencyStartTick == 0)
@@ -51,7 +51,7 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 	        emergencyStartTick = 0;
 	    }
 
-	    /* Warning >250 cm for 10 seconds */
+	    // Warning >250 cm for 10 seconds
 	    if (cmValue > WATER_WARNING_THRESHOLD)
 	    {
 	        if (warningStartTick == 0)
@@ -72,11 +72,11 @@ int32_t waterSensorOverCmValue(int32_t cmValue)
 	    return WATER_SENSOR_OK;
 }
 
+// This function resets the timers for the defined thresholds and is used when we get out of the emergency state so we don't trigger an emergency immediately when we get back into the operational state
 void waterSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
     warningStartTick = now;
-    timeoutStartTick = now;
 }
 
 

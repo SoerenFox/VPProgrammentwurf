@@ -57,51 +57,21 @@ int main(void)
 	// Initialize the HAL
 	 HAL_Init();
 
-	 applicationInit();
+	// Initialize the State Machine (needed to be able to initialize everything in the given state)
+	 applicationInit(); // Sets Initailization State
 
 	 // Initialize Scheduler
 	 schedInitialize(&gScheduler);
 	 gScheduler.pGetHALTick = HAL_GetTick;
+	 // Define the cyclic tasks for the Scheduler
 	 gScheduler.pTask_10ms = taskApp10ms;
 	 gScheduler.pTask_50ms = taskApp50ms;
 	 gScheduler.pTask_250ms = taskApp250ms;
 
-	 applicationRunCyclic();
+	 applicationRunCyclic(); // Activates Initailization State
+
 	 while(1)
 	 {
 		 schedCycle(&gScheduler);
 	 }
-
-
-	//while (1)
-    //
-    //	int adcValue = adcReadChannel(ADC_INPUT0);
-    //	gasSensorSetSensorVoltage(&gGasSensor1, adcValue);
-    //	int32_t gasValue1 = gasSensorGetSensorValue(&gGasSensor1);
-    //	outputLogf("Gas Sensor 1: %d\n\r", gasValue1);
-    //
-    //	adcValue = adcReadChannel(ADC_INPUT1);
-    //	gasSensorSetSensorVoltage(&gGasSensor2, adcValue);
-    //	int32_t gasValue2 = gasSensorGetSensorValue(&gGasSensor2);
-    //	outputLogf("Gas Sensor 2: %d\n\r", gasValue2);
-    //
-    //	HAL_Delay(100);
-    //
-
-    //uint32_t lastRuntime = 0;
-
-// while (1)
-// {
-// 	uint32_t currentTime = HAL_GetTick();
-//
-// 	if ((currentTime - lastRuntime) > 100) {
-// 		ledToggleLED(LED0);
-//
-// 		lastRuntime = HAL_GetTick();
-// 	}
-// }
-//
 }
-
-/***** PRIVATE FUNCTIONS *****************************************************/
-

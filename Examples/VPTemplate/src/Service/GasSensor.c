@@ -1,24 +1,24 @@
 #include "GasSensor.h"
 
 // in ppm
-#define MIN_SENSOR_VALUE 200
-#define MAX_SENSOR_VALUE 10000
+#define MIN_SENSOR_VALUE 200		// in ppm
+#define MAX_SENSOR_VALUE 10000	// in ppm
 
-#define MIN_SENSOR_VOLTAGE 500000	// in µV (0.5V)
+#define MIN_SENSOR_VOLTAGE 500000		// in µV (0.5V)
 #define MAX_SENSOR_VOLTAGE 2500000	// in µV (2.5V)
 
-#define PERCENTTOLERANCE 	10 // Tolerance for filtered gasSensorsValues
+#define PERCENTTOLERANCE 	10 	// Tolerance for filtered gasSensorsValues
 
-#define GETTOINT 100				// Factor to get dec to int
+#define GETTOINT 100					// Factor to get decimal to int
 
-#define GAS_WARNING_THRESHOLD     3000
-#define GAS_EMERGENCY_THRESHOLD   5000
+#define GAS_WARNING_THRESHOLD     3000	// threshold for warning in ppm
+#define GAS_EMERGENCY_THRESHOLD   5000	// threshold for emergency in ppm
 
-#define GAS_WARNING_TIME_MS       5000
-#define GAS_EMERGENCY_TIME_MS     3000
+#define GAS_WARNING_TIME_MS       5000	// time for warning in ms
+#define GAS_EMERGENCY_TIME_MS     3000	// time for emergency in ms
 
-static uint32_t warningStartTick = 0;
-static uint32_t emergencyStartTick = 0;
+static uint32_t warningStartTick = 0; // This variable stores the tick count when the gas sensor value first exceeded the warning threshold
+static uint32_t emergencyStartTick = 0; // This variable stores the tick count when the gas sensor value first exceeded the emergency threshold
 
 /**
  * @brief Initially sets all necessary values of object
@@ -122,19 +122,20 @@ int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2)
     	uint32_t diff = filteredValue2 - filteredValue1;
     	if ((diff * GETTOINT/filteredValue2) <= PERCENTTOLERANCE) return SENSOR_OK;
 
-        return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
+        return SENSOR_PPMVALUE_INVALID;   // invalid value
 
     } else if (filteredValue2 < filteredValue1)
     {
     	uint32_t diff = filteredValue1 - filteredValue2;
     	if ((diff * GETTOINT/filteredValue1) <= PERCENTTOLERANCE) return SENSOR_OK;
 
-    	return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
+    	return SENSOR_PPMVALUE_INVALID;   // invalid value
     }
 
     return SENSOR_OK;       // values valid
 }
 
+// This function reads the ADC value, sets the sensor voltage and returns the calculated ppm value for the entered GasSensor object and their ADC channel
 int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
 {
     uint32_t raw = adcReadChannel(adcChannel);
@@ -144,16 +145,18 @@ int32_t gasSensorReadPpmValue(GasSensor* pSensor, ADC_Channel_t adcChannel)
     return gasSensorGetSensorValue(pSensor);
 }
 
+// This function calculates the average of the two given filtered values
 int32_t calculateAvgPpmValue(int32_t filteredValue1, int32_t filteredValue2)
 {
 	int32_t avg = ((filteredValue1 + filteredValue2)/2);
 	return avg;
 }
 
+// This function checks if the given ppm value exceeds the defined thresholds for the dualGasSensor with their specific time limits and returns the corresponding status
 int32_t gasSensorOverPpmValue(int32_t avgValue)
 {
 		uint32_t now = HAL_GetTick();
-		/* Emergency >5000 ppm for 3 seconds */
+		// Emergency >5000 ppm for 3 seconds
 	    if (avgValue > GAS_EMERGENCY_THRESHOLD)
 	    {
 	        if (emergencyStartTick == 0)
@@ -171,7 +174,7 @@ int32_t gasSensorOverPpmValue(int32_t avgValue)
 	        emergencyStartTick = 0;
 	    }
 
-	    /* Warning >3000 ppm for 5 seconds */
+	    // Warning >3000 ppm for 5 seconds
 	    if (avgValue > GAS_WARNING_THRESHOLD)
 	    {
 	        if (warningStartTick == 0)
@@ -192,6 +195,7 @@ int32_t gasSensorOverPpmValue(int32_t avgValue)
 	    return SENSOR_OK;
 }
 
+// This function resets the timers for the defined thresholds and is used when we get out of the emergency state so we don't trigger an emergency immediately when we get back into the operational state
 void gasSensorResetThresholdTimers(uint32_t now)
 {
     emergencyStartTick = now;
