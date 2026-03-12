@@ -29,7 +29,12 @@
  * @retval : None
  */
 
-/* SCB VTOR register address (Cortex-M4) */
+/** 
+ * Moving the vector adress in start up code is documented in the "Cortex-M4 Generic User Guide":
+ * - The VTOR adress can be found in the System Control Block (page 4-11)
+ * - How to call dsb and isb can be found in the Instruction Set Summary (page 3-3)
+*/
+
 .equ SCB_VTOR, 0xE000ED08
 
 .section .text.StartApp_Handler
@@ -37,7 +42,7 @@
 .global StartApp_Handler
 StartApp_Handler:
     /* Relocate Vector Table because .signature is before .isr_vector */
-    ldr r0, =_isr_vector      /* computed constant below */
+    ldr r0, =_isr_vector
     ldr r1, =SCB_VTOR
     str r0, [r1]
 

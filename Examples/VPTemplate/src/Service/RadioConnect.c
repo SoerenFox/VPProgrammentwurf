@@ -25,10 +25,10 @@ static uint8_t hasPreviousData = 0;
 static int8_t calculateChecksum(RadioConnect* pRadioConnect);
 static int32_t verifyReceived(RadioConnect* pRadioConnect);
 
-/*
+/**
  * @brief Reads UART buffer and writes into pRadioConnect after syncing with struct format
  *
- * @params Radioconnect* as destination where to write message
+ * @param Radioconnect* as destination where to write message
  *
  * @return error status
  */
@@ -64,7 +64,15 @@ int32_t radioConnectBufferToStruct(RadioConnect* pRadioConnect) {
 	return CONNECT_OK;
 }
 
-
+/**
+ * @brief Returns time stamp of last received sensor value
+ * 
+ * @param Radioconnect* object to handle
+ * 
+ * @param int* destination for return value 
+ *
+ * @return error status
+ */
 int32_t radioConnectGetLastInputTime(RadioConnect* pRadioConnect, int* lastInputTime) {
 	if (!pRadioConnect || !lastInputTime) return CONNECT_INVALID_PTR;
 
@@ -73,6 +81,13 @@ int32_t radioConnectGetLastInputTime(RadioConnect* pRadioConnect, int* lastInput
 	return CONNECT_OK;
 }
 
+/**
+ * @brief Calculates checksum and returns it for given object
+ * 
+ * @param Radioconnect* object to handle
+ *
+ * @return checksum
+ */
 static int8_t calculateChecksum(RadioConnect* pRadioConnect) {
 	uint8_t* bytes = (uint8_t*)pRadioConnect;
 
@@ -84,8 +99,13 @@ static int8_t calculateChecksum(RadioConnect* pRadioConnect) {
 	return (int8_t)((lsb ^ CHECKSUM_COMPLEMENT) + CHECKSUM_INCREMENT);
 }
 
-
-
+/**
+ * @brief Checks if package counter and checksum fulfill the requirements
+ * 
+ * @param Radioconnect* object to handle
+ *
+ * @return error status
+ */
 static int32_t verifyReceived(RadioConnect* pRadioConnect) {
 	if (pRadioConnect->checksum != calculateChecksum(pRadioConnect)) return CONNECT_SENSOR_DEFECT;
 	if (!hasPreviousData) {

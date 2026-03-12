@@ -20,6 +20,15 @@
 static uint32_t warningStartTick = 0;
 static uint32_t emergencyStartTick = 0;
 
+/**
+ * @brief Initially sets all necessary values of object
+ * 
+ * @param GasSensor* object to handle
+ * 
+ * @param int* conversion factor used to calculate sensor value
+ *
+ * @return error status
+ */
 int32_t gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
 
@@ -29,6 +38,15 @@ int32_t gasSensorInitialize(GasSensor* pSensor, uint32_t convFactor) {
 	return SENSOR_OK;
 }
 
+/**
+ * @brief Sets sensor voltage of given object
+ * 
+ * @param GasSensor* object to handle
+ * 
+ * @param uint32_t sensor voltage
+ *
+ * @return error status
+ */
 int32_t gasSensorSetSensorVoltage(GasSensor* pSensor, uint32_t sensorVoltage) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
 
@@ -37,6 +55,13 @@ int32_t gasSensorSetSensorVoltage(GasSensor* pSensor, uint32_t sensorVoltage) {
 	return SENSOR_OK;
 }
 
+/**
+ * @brief Calculates and returns sensor value of given object
+ * 
+ * @param GasSensor* object to handle
+ * 
+ * @return error status if negative, otherwise sensor value
+ */
 int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
 
@@ -47,6 +72,13 @@ int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
 	return value;
 }
 
+/**
+ * @brief Returns sensor voltage from given object after checking for validity
+ * 
+ * @param GasSensor* object to handle
+ *
+ * @return error status if negative, otherwise sensor voltage
+ */
 int32_t gasSensorGetSensorVoltage(GasSensor* pSensor) {
 	if (!pSensor) return SENSOR_INVALID_PTR;
 
@@ -55,6 +87,15 @@ int32_t gasSensorGetSensorVoltage(GasSensor* pSensor) {
 	return pSensor->sensorVoltage;
 }
 
+/**
+ * @brief Checks if the two given values are valid adc values 
+ * 
+ * @param int32_t value one to check
+ *
+ * @param int32_t value two to check
+ *
+ * @return error status
+ */
 int8_t checkForValideADC(int32_t value1, int32_t value2)
 {
     if (value1 < 0 || value2 < 0)
@@ -65,6 +106,15 @@ int8_t checkForValideADC(int32_t value1, int32_t value2)
     return SENSOR_OK;       // values valid
 }
 
+/**
+ * @brief Checks if the two given filter values match the tolerance
+ * 
+ * @param int32_t value one to check
+ *
+ * @param int32_t value two to check
+ *
+ * @return error status
+ */
 int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2)
 {
     if (filteredValue1 < filteredValue2)
