@@ -7,12 +7,12 @@
 #define MIN_SENSOR_VOLTAGE 500000	// in µV (0.5V)
 #define MAX_SENSOR_VOLTAGE 2500000	// in µV (2.5V)
 
-#define PERCENTTOLERANCE 	50 // Tolerance for filtered gasSensorsValues
+#define PERCENTTOLERANCE 	10 // Tolerance for filtered gasSensorsValues
 
 #define GETTOINT 100				// Factor to get dec to int
 
 #define GAS_WARNING_THRESHOLD     3000
-#define GAS_EMERGENCY_THRESHOLD   8000
+#define GAS_EMERGENCY_THRESHOLD   5000
 
 #define GAS_WARNING_TIME_MS       5000
 #define GAS_EMERGENCY_TIME_MS     3000
