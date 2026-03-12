@@ -19,6 +19,13 @@ static int32_t checkForKey(Auth* pAuth);
 static void copyAuthToRam(void);
 static void decryptAuth(uint8_t key[], uint32_t keyLen);
 
+/**
+ * @brief Initially nulls and sets all necessary attributes of Radio Connect object
+ *
+ * @param Auth* object to handle
+ *
+ * @return error status
+ */
 int32_t authInitialize(Auth* pAuth) {
     if (!pAuth) return AUTH_INVALID_PTR;
 
@@ -29,6 +36,13 @@ int32_t authInitialize(Auth* pAuth) {
     return AUTH_OK;
 }
 
+/**
+ * @brief Inner state table for the prepareApp state
+ *
+ * @param Auth* object to handle
+ *
+ * @return error status
+ */
 int32_t authPrepareApp(Auth* pAuth) {
     if (!pAuth) return AUTH_INVALID_PTR;
 
@@ -125,6 +139,13 @@ static int32_t checkForInitChar(Auth* pAuth) {
     return INIT_CHAR_NO;
 }
 
+/**
+ * @brief Handles time out and key reception by simply appending inputs to key until newline char
+ *
+ * @param Auth* object to handle
+ *
+ * @return error status
+ */
 static int32_t checkForKey(Auth* pAuth) {
     uint32_t now = HAL_GetTick();
     uint32_t elapsed = now - pAuth->keyStartTick;
