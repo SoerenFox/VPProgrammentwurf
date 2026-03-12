@@ -1,9 +1,10 @@
 \chapter{Test Specification}
 
+
 %-----------------------------------------------------------------%
-    %Test Case 1 - Uart Communication
+    %Test Case 1 - Scheduler Functionality
 %-----------------------------------------------------------------%
-\section{TC-01 - UART Communication}
+\section{TC-01 - Scheduler Functionality}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -12,118 +13,6 @@
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
 \textbf{Test Case ID} & TC-01 \\ \hline
-\textbf{Description} & Testing UART Communication in Auth \\ \hline
-\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
-\textbf{Test Steps} &
-\begin{enumerate}
-\item Execute the 10ms task
-\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
-\item Check the if-condition (see code)
-\item Inspect the values in Eclipse
-\item Manually modify the ADC values
-\item Set a breakpoint on \textit{applicationSendEvent()}
-\item Verify at which values the breakpoint is triggered and validate the calculation
-\end{enumerate}
-\\ \hline
-\textbf{Expected Result} & Breakpoint is triggered \\ \hline
-\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
-\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
-\end{tabular}
-\end{table}
-\newpage
-\subsection{Description TC-01}
-
-\textbf{Tested Code:}
-
-\begin{lstlisting}[style=CStyle]
-gScheduler.pGetHALTick = HAL_GetTick;
-gScheduler.pTask_10ms = task10ms;
-gScheduler.pTask_50ms = task50ms;
-gScheduler.pTask_250ms = task250ms;
-
-int main(void)
-{
-    while(1)
-    {
-        task10ms();
-        task50ms();
-        task250ms();
-    }
-}
-
-void task10ms()
-{
-    ledToggleLED(LED0);
-}
-
-void task50ms()
-{
-    ledToggleLED(LED1);
-}
-
-void task250ms()
-{
-    ledToggleLED(LED2);
-}
-\end{lstlisting}
-\newpage
-%-----------------------------------------------------------------%
-    %Test Case 2 - Transition from Auth to App
-%-----------------------------------------------------------------%
-\section{TC-02 - Transition from Auth to App}
-
-\renewcommand{\arraystretch}{1.4}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
-\hline
-\textbf{Test Case ID} & TC-02 \\ \hline
-\textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
-\textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
-\textbf{Test Steps} &
-\begin{enumerate}
-\item Execute the 10ms task
-\item The constant \textit{PERCENTTOLERANCE} was set to 30 for testing
-\item Check the if-condition (see code)
-\item Inspect the values in Eclipse
-\item Manually modify the ADC values
-\item Set a breakpoint on \textit{applicationSendEvent()}
-\item Verify at which values the breakpoint is triggered and validate the calculation
-\end{enumerate}
-\\ \hline
-\textbf{Expected Result} & Breakpoint is triggered \\ \hline
-\textbf{Actual Result} & Breakpoint is triggered and calculated values match the expected results \\ \hline
-\textbf{Status} & \textcolor{green!60!black}{Passed} \\ \hline
-\end{tabular}
-\end{table}
-\newpage
-\subsection{Description TC-02}
-
-\textbf{Tested Code:}
-
-\begin{lstlisting}[style=CStyle]
-void System_Init(void)
-{
-    HAL_Init();
-    GPIO_Init();
-    UART_Init();
-}
-\end{lstlisting}
-
-\newpage
-%-----------------------------------------------------------------%
-    %Test Case 3 - Scheduler Functionality
-%-----------------------------------------------------------------%
-\section{TC-03 - Scheduler Functionality}
-
-\renewcommand{\arraystretch}{1.4}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
-\hline
-\textbf{Test Case ID} & TC-03 \\ \hline
 \textbf{Description} & Verification of the scheduler functionality \\ \hline
 \textbf{Prerequisites} & Scheduler has been initialized \\ \hline
 \textbf{Test Steps} &
@@ -141,7 +30,7 @@ void System_Init(void)
 \end{table}
 
 \newpage
-\subsection{Description TC-03}
+\subsection{Description TC-01}
 
 This test case verifies the correct functionality of the implemented scheduler mechanism. 
 According to the system requirements, the scheduler is responsible for executing periodic 
@@ -201,9 +90,9 @@ void task250ms()
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 4 - Tolerance of the Filtered ADC Values
+    %Test Case 2 - Tolerance of the Filtered ADC Values
 %-----------------------------------------------------------------%
-\section{TC-04 - Tolerance of the Filtered ADC Values}
+\section{TC-02 - Tolerance of the Filtered ADC Values}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -211,7 +100,7 @@ void task250ms()
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-04 \\ \hline
+\textbf{Test Case ID} & TC-02 \\ \hline
 \textbf{Description} & Testing the transition to the Failure state due to tolerance violation \\ \hline
 \textbf{Prerequisites} & State Operational and ADC values are valid \\ \hline
 \textbf{Test Steps} &
@@ -231,7 +120,7 @@ void task250ms()
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-04}
+\subsection{Description TC-02}
 This test case verifies the correct detection of inconsistent gas sensor values based on a defined tolerance threshold. 
 The filtered values of the two gas sensors are compared within the periodic \textit{10ms task} using the function 
 \textit{isGasSensorMismatch()}.
@@ -252,15 +141,15 @@ handles tolerance violations according to the specified requirements.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.85\linewidth]{Pictures/t4.png}
-    \caption{Tested code for TC-04}
+    \caption{Tested code for TC-02}
     \label{fig:t4_code}
 \end{figure}
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 5 - Check State Machine Transition
+    %Test Case 3 - Check State Machine Transition
 %-----------------------------------------------------------------%
-\section{TC-05 - Check State Machine Transition}
+\section{TC-03 - Check State Machine Transition}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -268,7 +157,7 @@ handles tolerance violations according to the specified requirements.
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-05 \\ \hline
+\textbf{Test Case ID} & TC-03 \\ \hline
 \textbf{Description} & Testing the transition to the Failure state from Init \\ \hline
 \textbf{Prerequisites} & Start the app and sensor values are invalid \\ \hline
 \textbf{Test Steps} &
@@ -286,7 +175,7 @@ handles tolerance violations according to the specified requirements.
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-05}
+\subsection{Description TC-03}
 
 This test case verifies the correct transition of the application state machine from the 
 \textit{Initialization} state to the \textit{Failure} state when invalid sensor values are detected. 
@@ -329,9 +218,9 @@ void taskApp10ms()
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 6 - Problematic Sensor Values During Initialization
+    %Test Case 4 - Problematic Sensor Values During Initialization
 %-----------------------------------------------------------------%
-\section{TC-06 - Problematic Sensor Values During Initialization}
+\section{TC-04 - Problematic Sensor Values During Initialization}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -339,7 +228,7 @@ void taskApp10ms()
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-06 \\ \hline
+\textbf{Test Case ID} & TC-04 \\ \hline
 \textbf{Description} & Problematic sensor values during initialization \\ \hline
 \textbf{Prerequisites} & Start the app \\ \hline
 \textbf{Test Steps} &
@@ -357,7 +246,7 @@ void taskApp10ms()
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-06}
+\subsection{Description TC-04}
 This test case analyzes the behaviour of the system during the initialization phase when the gas sensor values are read for the first time. 
 During testing it was observed that the initial ADC readings of the sensors were not yet valid immediately after initialization. 
 As a result, the validation check in \textit{checkForValideADC()} incorrectly detected invalid sensor values and triggered the event 
@@ -370,7 +259,7 @@ To ensure reliable initialization, a short delay using \textit{HAL\_Delay()} was
 After adding the delay, the sensor readings became valid and the system correctly transitioned to the 
 \textit{PreOperational} state instead of entering the failure state. 
 This test confirms that the initialization sequence must allow sufficient time for the sensors to stabilize before validating their values.
-
+\newpage
 \textbf{Tested Code:}
 
 \begin{lstlisting}[style=CStyle]
@@ -413,9 +302,9 @@ int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 7 - Display Visualization
+    %Test Case 5 - Display Visualization
 %-----------------------------------------------------------------%
-\section{TC-07 - Display Visualization}
+\section{TC-05 - Display Visualization}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -423,7 +312,7 @@ int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-07 \\ \hline
+\textbf{Test Case ID} & TC-05 \\ \hline
 \textbf{Description} & Testing the display visualization with valid values \\ \hline
 \textbf{Prerequisites} & State Operational and water values are valid \\ \hline
 \textbf{Test Steps} &
@@ -439,7 +328,7 @@ int32_t gasSensorGetSensorValue(GasSensor* pSensor) {
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-07}
+\subsection{Description TC-05}
 This test case verifies the correct visualization of valid water level values on the display during the 
 \textit{Operational} state. For testing purposes, fixed test values were manually provided instead of the 
 original sensor input to ensure deterministic behaviour.
@@ -455,7 +344,7 @@ display is shown instead of the full numeric value.
 The successful execution of this test confirms that valid sensor values are correctly processed and 
 displayed, and that values exceeding the visual display range are properly limited to the maximum 
 displayable value.
-
+\newpage
 \textbf{Tested Code:}
 
 \begin{lstlisting}[style=CStyle]
@@ -489,9 +378,9 @@ int32_t waterSensorHandler(uint32_t gCycleCounter)
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 8 - Water Sensor above Threshold
+    %Test Case 6 - Water Sensor above Threshold
 %-----------------------------------------------------------------%
-\section{TC-08 - Water Sensor above Threshold}
+\section{TC-06 - Water Sensor above Threshold}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -499,7 +388,7 @@ int32_t waterSensorHandler(uint32_t gCycleCounter)
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-08 \\ \hline
+\textbf{Test Case ID} & TC-06 \\ \hline
 \textbf{Description} & Testing warning and emergency thresholds for water sensor \\ \hline
 \textbf{Prerequisites} & State Operational and waterSensor values is valid \\ \hline
 \textbf{Test Steps} &
@@ -520,7 +409,7 @@ int32_t waterSensorHandler(uint32_t gCycleCounter)
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-08}
+\subsection{Description TC-06}
 This test case verifies the correct detection of warning and emergency conditions for the
 water level monitoring logic. According to the system requirements, the application must
 detect critical water levels and trigger corresponding system reactions based on defined
@@ -547,15 +436,15 @@ according to the specified requirements.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\linewidth]{Pictures/t8.png}
-    \caption{Tested code for TC-08}
+    \caption{Tested code for TC-06}
     \label{fig:t8_code}
 \end{figure}
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 9 - Gas Sensor above Threshold
+    %Test Case 7 - Gas Sensor above Threshold
 %-----------------------------------------------------------------%
-\section{TC-09 - Gas Sensor above Threshold}
+\section{TC-07 - Gas Sensor above Threshold}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -563,7 +452,7 @@ according to the specified requirements.
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-09 \\ \hline
+\textbf{Test Case ID} & TC-07 \\ \hline
 \textbf{Description} &  Testing warning and emergency thresholds for gas sensor \\ \hline
 \textbf{Prerequisites} & State Operational, gasSensor values are valid and average is calculated \\ \hline
 \textbf{Test Steps} &
@@ -582,7 +471,7 @@ according to the specified requirements.
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-09}
+\subsection{Description TC-07}
 This test case verifies the correct behaviour of the gas sensor monitoring logic when defined
 warning and emergency thresholds are exceeded. According to the system requirements, the
 application must detect critical gas concentrations and trigger different responses depending
@@ -608,15 +497,15 @@ according to the specified requirements.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\linewidth]{Pictures/t9.png}
-    \caption{Tested code for TC-09}
+    \caption{Tested code for TC-07}
     \label{fig:t9_code}
 \end{figure}
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 10 - Debouncing Button Presses
+    %Test Case 8 - Debouncing Button Presses
 %-----------------------------------------------------------------%
-\section{TC-10 - Debouncing Button Presses}
+\section{TC-8 - Debouncing Button Presses}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -624,7 +513,7 @@ according to the specified requirements.
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-10 \\ \hline
+\textbf{Test Case ID} & TC-8 \\ \hline
 \textbf{Description} & Verification of the debounce mechanism for push buttons SW1 and B1. \\ \hline
 \textbf{Prerequisites} & Operational State, 10ms Task Running \\ \hline
 \textbf{Test Steps} &
@@ -643,7 +532,7 @@ Short bouncing signals do not generate any event. A state change event is genera
 \end{tabular}
 \end{table}
 \newpage
-\subsection{Description TC-10}
+\subsection{Description TC-8}
 This test case verifies the correct functionality of the button debounce mechanism
 for the push buttons SW1 and B1. The debounce logic ensures that short mechanical
 bouncing signals do not generate unintended events in the application.
@@ -675,16 +564,16 @@ input signals.
     \centering
     \includegraphics[width=0.75\linewidth]{Pictures/t10_1.png}
     \includegraphics[width=0.75\linewidth]{Pictures/t10_2.png}
-    \caption{Tested code for TC-10}
-    \label{fig:t10_code}
+    \caption{Tested code for TC-08}
+    \label{fig:t8_code}
 \end{figure}
 
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 11 - Verification of Makefile Encryption
+    %Test Case 9 - Verification of Makefile Encryption
 %-----------------------------------------------------------------%
-\section{TC-11 - Verification of Makefile Encryption}
+\section{TC-09 - Verification of Makefile Encryption}
 
 \renewcommand{\arraystretch}{1.4}
 
@@ -692,7 +581,7 @@ input signals.
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-11 \\ \hline
+\textbf{Test Case ID} & TC-09 \\ \hline
 \textbf{Description} & Verification that the Makefile correctly performs the encryption step during the build process. The encrypted output file generated by the build system is compared with a previously generated reference file. The implementation details of the encryption process are referenced in the appendix. \\ \hline
 \textbf{Prerequisites} & Build environment is set up and the Makefile encryption functionality is implemented. \\ \hline
 \textbf{Test Steps} &
@@ -722,9 +611,9 @@ To verify that the Makefile patching process encrypted the intended ELF segment,
 
 \newpage
 %-----------------------------------------------------------------%
-    %Test Case 12 - Verification of Jump from Authenticator to Application
+    %Test Case 10 - Verification of Jump from Authenticator to Application
 %-----------------------------------------------------------------%
-\section{TC-12 - Verification of Jump from Authenticator to Application}
+\section{TC-10 - Verification of Jump from Authenticator to Application}
 \label{sec:tc12}
 
 \renewcommand{\arraystretch}{1.4}
@@ -733,7 +622,7 @@ To verify that the Makefile patching process encrypted the intended ELF segment,
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-12 \\ \hline
+\textbf{Test Case ID} & TC-10 \\ \hline
 \textbf{Description} & Verification that the Authenticator correctly transfers to the application after successful decryption and verification. The relevant implementation details of the authentication process are provided in Appendix~\ref{app:auth_script_section}. \\ \hline
 \textbf{Prerequisites} & The Authenticator and at least a simplified Application as well as fully implemented linker and start up files following the requirements. The simplified application implements a distinct LED behaviour in order to clearly indicate when execution has transferred from the Authenticator to the Application. \\ \hline
 \textbf{Test Steps} &
@@ -758,9 +647,9 @@ After successful verification, the system performs a jump to the application ent
 \newpage
 
 %-----------------------------------------------------------------%
-    %Test Case 13 - Verification of Buffer Overflow Protection
+    %Test Case 11 - Verification of Buffer Overflow Protection
 %-----------------------------------------------------------------%
-\section{TC-13 - Verification of Buffer Overflow Protection}
+\section{TC-11 - Verification of Buffer Overflow Protection}
 \label{sec:tc13}
 
 \renewcommand{\arraystretch}{1.4}
@@ -769,7 +658,7 @@ After successful verification, the system performs a jump to the application ent
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-13 \\ \hline
+\textbf{Test Case ID} & TC-11 \\ \hline
 \textbf{Description} & Verification that the implemented buffer overflow protection mechanisms prevent unintended behaviour when excessive input is received via the serial interface. The Python script used to generate continuous serial input is provided in Appendix~\ref{app:overflow_script_section}. \\ \hline
 \textbf{Prerequisites} & The full Authenticator is successfully compiled, flashed to the target device, and running in operational state. \\ \hline
 \textbf{Test Steps} &
@@ -792,9 +681,9 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 
 \newpage
 %-----------------------------------------------------------------%
-    %Test Case 14 - Verification of Stack Monitor Functionality
+    %Test Case 11 - Verification of Stack Monitor Functionality
 %-----------------------------------------------------------------%
-\section{TC-14 - Verification of Stack Monitor Functionality}
+\section{TC-11 - Verification of Stack Monitor Functionality}
 \label{sec:tc14}
 
 \renewcommand{\arraystretch}{1.4}
@@ -803,7 +692,7 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 \centering
 \begin{tabular}{|p{0.18\textwidth}|p{0.77\textwidth}|}
 \hline
-\textbf{Test Case ID} & TC-14 \\ \hline
+\textbf{Test Case ID} & TC-11 \\ \hline
 \textbf{Description} & Verification of the functionality of the stack monitor module by observing stack usage before and after artificially increasing stack consumption. \\ \hline
 \textbf{Prerequisites} & The stack is correctly placed in the linker configuration and initialized in the startup code. The stack monitor module is integrated into the system and debugging tools are available. \\ \hline
 \textbf{Test Steps} &
@@ -840,9 +729,9 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 \newpage
 
 %-----------------------------------------------------------------%
-%Test Case 15 - Verification of Stack Corruption Detection
+%Test Case 13 - Verification of Stack Corruption Detection
 %-----------------------------------------------------------------%
-\section{TC-15 - Verification of Stack Corruption Detection}
+\section{TC-13 - Verification of Stack Corruption Detection}
 \label{sec:tc15}
 
 \renewcommand{\arraystretch}{1.4}
@@ -851,7 +740,7 @@ The purpose of this test is to verify that the Authenticator correctly handles e
 \centering
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
-\textbf{Test Case ID} & TC-15 \\ \hline
+\textbf{Test Case ID} & TC-13 \\ \hline
 \textbf{Description} & Verification that the stack monitor correctly detects stack corruption while the full application state machine is active. \\ \hline
 \textbf{Prerequisites} & The full application is compiled and running with an active state table and the integrated stack monitor module. Debugging tools are available to observe the return value of the stack monitoring functions. \\ \hline
 \textbf{Test Steps} &
