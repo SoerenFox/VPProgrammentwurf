@@ -28,6 +28,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 
+% C
 \lstdefinestyle{CStyle}{
     language=C,
     basicstyle=\ttfamily\small,
@@ -41,6 +42,21 @@
     frame=single,
     breaklines=true,
     tabsize=2
+}
+% Python
+\lstdefinestyle{python}{
+  language=Python,
+  breaklines=true,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  stringstyle=\color{orange},
+  commentstyle=\color{gray},
+  showstringspaces=false,
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  frame=single,
+  captionpos=b
 }
 
 \newcommand{\titel}{Underground Mining Monitoring System}
@@ -62,7 +78,12 @@
 
 \include{chapter/introduction}
 \include{chapter/description}
+% \include{notes/notes}
 
 \listoffigures
+
+\appendix
+
+\include{chapter/appendix}
 
 \end{document}
