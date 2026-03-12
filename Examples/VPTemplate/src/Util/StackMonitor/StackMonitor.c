@@ -30,7 +30,7 @@ int32_t getUsedBytes() {
  * @return Returns percentage of used bytes in stash as XX%.
  */
 int32_t getUsage() {
-	return (int32_t)(getUsedBytes() / (int32_t)&_size_of_stack);
+	 return (int32_t)((getUsedBytes() * 100) / (int32_t)&_size_of_stack);
 }
 
 
