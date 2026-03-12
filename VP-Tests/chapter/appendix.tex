@@ -1,0 +1,110 @@
+\chapter{Appendix}
+\label{app:appendix}
+
+\section{Test Case TC-12: Python Script for Authenticator Unlock}
+\label{app:auth_script_section}
+
+The following Python script was used during Test Case~\ref{sec:tc12} to send the unlock sequence to the Authenticator via the serial interface. The script allows the user to select one of the available serial ports, sends the initial character \texttt{A}, appends the configured key, and terminates the sequence with a newline character. This procedure ensures a reproducible and repeatable execution of the authentication test and reduces potential input errors during manual interaction.
+
+Listing~\ref{lst:auth_unlock_script} shows the exact script used for the test.
+
+\begin{lstlisting}[style=python, caption={Python script used to unlock the Authenticator during TC-10}, label={lst:auth_unlock_script}]
+    import serial
+    import time
+    import argparse
+
+    import serial.tools.list_ports
+
+    DEFAULT_KEY = "VP2026"
+
+    try:
+        argParser = argparse.ArgumentParser(prog='unlock_auth', description='Sends unlocking sequence to serial port.')
+        argParser.add_argument('-k', '--key', default=DEFAULT_KEY)
+        args = argParser.parse_args()
+
+        ports = serial.tools.list_ports.comports()
+
+        if not ports:
+            print("No serial ports found.")
+            exit()
+
+        for i, port in enumerate(ports):
+            print(f"{i + 1}.", port.device, port.description)
+
+        while True:
+            try:
+                choice = int(input("Select port: "))
+                if 1 <= choice <= len(ports):
+                    break
+                else:
+                    print(f"Invalid choice. Please select a number between 1 and {len(ports)}.")
+            except ValueError:
+                print("Please enter a valid number.")
+
+        # Configure serial interface
+        ser = serial.Serial(
+            port=ports[choice - 1].device,
+            baudrate=115200,
+            timeout=1
+        )
+
+        key = "A" + args.key + "\n"
+
+        for l in key:
+            ser.write(l.encode('ascii'))
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        ser.close()
+        print("\nSkript beendet.")
+\end{lstlisting}
+
+\section{Test Case TC-13: Serial Input Flooding Script}
+\label{app:overflow_script_section}
+
+The following Python script was used during Test Case~\ref{sec:tc13} to simulate continuous input flooding on the serial interface of the Authenticator. The script repeatedly sends data over the serial connection at short intervals in order to generate excessive input traffic.
+
+This test scenario is used to validate that the implemented input handling and buffer protection mechanisms correctly prevent buffer overflow conditions and that the system remains stable even under continuous serial input. The script also allows the user to select the serial port dynamically so that the test can be executed on different operating systems without modification.
+
+Listing~\ref{lst:overflow_script} shows the exact script used for the test.
+
+\begin{lstlisting}[style=python, caption={Python script used to generate continuous serial input during TC-11}, label={lst:overflow_script}]
+    import serial
+    import time
+
+    import serial.tools.list_ports
+
+    try:
+        # Let user select port so it works on windows as well
+        ports = serial.tools.list_ports.comports()
+
+        if not ports:
+            print("No serial ports found.")
+            exit()
+
+        for i, port in enumerate(ports):
+            print(f"{i + 1}.", port.device, port.description)
+
+        while True:
+            try:
+                choice = int(input("Select port: "))
+                if 1 <= choice <= len(ports):
+                    break
+                else:
+                    print(f"Invalid choice. Please select a number between 1 and {len(ports)}.")
+            except ValueError:
+                print("Please enter a valid number.")
+
+        ser = serial.Serial(
+            port=ports[choice - 1].device,
+            baudrate=115200,
+            timeout=1
+        )
+        
+        while True:
+        ser.write("1".encode("ascii"))
+            time.sleep(0.01)
+    except KeyboardInterrupt:
+        ser.close()
+        print("\nUser interrupt")
+\end{lstlisting}
+    
