@@ -7,6 +7,8 @@
 #define MIN_SENSOR_VOLTAGE 500000	// in µV (0.5V)
 #define MAX_SENSOR_VOLTAGE 2500000	// in µV (2.5V)
 
+#define PERCENTTOLERANCE 	50 // Tolerance for filtered gasSensorsValues
+
 #define GETTOINT 100				// Factor to get dec to int
 
 #define GAS_WARNING_THRESHOLD     3000
@@ -63,19 +65,19 @@ int8_t checkForValideADC(int32_t value1, int32_t value2)
     return SENSOR_OK;       // values valid
 }
 
-int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2, uint32_t percent)
+int8_t isGasSensorMismatch(int32_t filteredValue1, int32_t filteredValue2)
 {
     if (filteredValue1 < filteredValue2)
     {
     	uint32_t diff = filteredValue2 - filteredValue1;
-    	if ((diff * GETTOINT/filteredValue2) <= percent) return SENSOR_OK;
+    	if ((diff * GETTOINT/filteredValue2) <= PERCENTTOLERANCE) return SENSOR_OK;
 
         return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
 
     } else if (filteredValue2 < filteredValue1)
     {
     	uint32_t diff = filteredValue1 - filteredValue2;
-    	if ((diff * GETTOINT/filteredValue1) <= percent) return SENSOR_OK;
+    	if ((diff * GETTOINT/filteredValue1) <= PERCENTTOLERANCE) return SENSOR_OK;
 
     	return SENSOR_PPMVALUE_INVALID;   // invalid ADC value
     }

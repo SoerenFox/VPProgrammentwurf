@@ -7,7 +7,6 @@
 #include "AppHandler.h"
 #include <stdbool.h>
 
-#define PERCENTTOLERANCE 	50 // Tolerance for filtered gasSensorsValues
 #define FLASH_PERIOD_MS 	250
 
 #define MAX_DISPLAY_VALUE 	999
@@ -48,7 +47,7 @@ int32_t gasSensorHandler(GasSensor* gSensor1, GasSensor* gSensor2, EMAFilterData
 	int32_t pot1_filtered = filterEMA(gEMA1, gasValue1);
 	int32_t pot2_filtered = filterEMA(gEMA2, gasValue2);
 
-	if (isGasSensorMismatch(pot1_filtered, pot2_filtered, PERCENTTOLERANCE) == SENSOR_PPMVALUE_INVALID)
+	if (isGasSensorMismatch(pot1_filtered, pot2_filtered) == SENSOR_PPMVALUE_INVALID)
 	{
 		applicationSendEvent(APP_EVT_SENSOR_DEFECT);
 		return STATETBL_ERR_OK;
