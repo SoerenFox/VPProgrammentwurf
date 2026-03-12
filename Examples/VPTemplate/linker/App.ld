@@ -45,7 +45,7 @@ MEMORY
 /* Symbols used for memory management
  * This includes the stack and also a possible heap memory
  */
-_size_of_stack = 0x4096;                             /* Size of stack in bytes */
+_size_of_stack = 4096;                             /* Size of stack in bytes */
 _size_of_heap  = 0x0;                               /* Size of heap in bytes */
 
 /* Highest usable address of the RAM. */
